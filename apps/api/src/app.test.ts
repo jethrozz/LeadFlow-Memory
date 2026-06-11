@@ -43,4 +43,54 @@ describe("api app", () => {
     expect(body.workflowRun.type).toBe("conversion");
     expect(body.channel).toBe("mcp-xhs-chat");
   });
+
+  it("stores a Walrus artifact through the API", async () => {
+    const response = await app.request("/api/artifacts", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        leadId: "lead_001",
+        type: "handoff_proof",
+        data: { recoveredBy: "worker-2" },
+      }),
+    });
+
+    expect(response.status).toBe(201);
+    const json = (await response.json()) as { blobId: string };
+    expect(json.blobId).toMatch(/^fake_blob_/);
+  });
+
+  it("writes and recalls MemWal memory through the API", async () => {
+    const writeResponse = await app.request("/api/memories", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        leadId: "lead_001",
+        memorySpaceId: "space_001",
+        content: "客户关注渝北三房，总价 130 万以内。",
+        metadata: {
+          source: "conversion",
+          confidence: 0.9,
+          artifactRefs: [],
+        },
+      }),
+    });
+
+    expect(writeResponse.status).toBe(201);
+
+    const recallResponse = await app.request("/api/memories/recall", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        leadId: "lead_001",
+        memorySpaceId: "space_001",
+        query: "渝北",
+        limit: 3,
+      }),
+    });
+
+    expect(recallResponse.status).toBe(200);
+    const json = (await recallResponse.json()) as { memories: { content: string }[] };
+    expect(json.memories[0].content).toContain("渝北");
+  });
 });
