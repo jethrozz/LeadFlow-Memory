@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CampaignStatus {
+  draft
+  active
+  running
+  paused
+  completed
+  failed
+}
+
+enum LeadStatus {
+  discovered
+  qualified
+  assigned
+  contacting
+  replied
+  nurturing
+  asking_contact
+  contact_obtained
+  viewing_scheduled
+  converted
+  paused
+  lost
+}
+
+enum IntentLevel {
+  S
+  A
+  B
+  C
+  Ignore
+}
+
+enum ConversationStatus {
+  not_started
+  opened
+  waiting_reply
+  customer_replied
+  agent_replied
+  contact_shared
+  viewing_discussed
+  closed
+}
+
+enum WorkflowRunStatus {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+  retrying
+}
+
+enum DeviceStatus {
+  connected
+  disconnected
+  unavailable
+}
+
+model Campaign {
+  id                 String         @id @default(cuid())
+  name               String
+  industry           String
+  city               String?
+  targetCustomer     String
+  seedKeywords       String[]
+  targetCreators     Json
+  sourceModes        String[]
+  maxPostsPerRun     Int
+  maxCommentsPerPost Int
+  playbookId         String
+  status             CampaignStatus @default(draft)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  leads              Lead[]
+  sources            SocialSource[]
+  workflowRuns       WorkflowRun[]
+}
+
+model SocialSource {
+  id         String   @id @default(cuid())
+  campaignId String
+  platform   String
+  sourceType String
+  externalId String?
+  url        String?
+  authorName String?
+  content    String
+  status     String
+  capturedAt DateTime
+  raw        Json?
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  leads      Lead[]
+}
+
+model Lead {
+  id             String          @id @default(cuid())
+  campaignId     String
+  socialSourceId String?
+  playbookId     String
+  platform       String
+  sourceType     String
+  status         LeadStatus      @default(discovered)
+  intentLevel    IntentLevel
+  sourceUrl      String?
+  sourceAuthor   String?
+  memorySpaceId  String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  campaign       Campaign        @relation(fields: [campaignId], references: [id])
+  socialSource   SocialSource?   @relation(fields: [socialSourceId], references: [id])
+  profile        LeadProfile?
+  conversation   Conversation?
+  workflowRuns   WorkflowRun[]
+  memoryRefs     MemoryRef[]
+  artifactRefs   ArtifactRef[]
+  timelineEvents TimelineEvent[]
+  socialIdentity SocialIdentity?
+}
+
+model LeadProfile {
+  id                    String      @id @default(cuid())
+  leadId                String      @unique
+  industry              String
+  playbookId            String
+  summary               String
+  intentLevel           IntentLevel
+  profileCompleteness   Float
+  missingRequiredFields String[]
+  common                Json
+  fields                Json
+  updatedAt             DateTime    @updatedAt
+  lead                  Lead        @relation(fields: [leadId], references: [id])
+}
+
+model Conversation {
+  id               String                @id @default(cuid())
+  leadId           String                @unique
+  status           ConversationStatus    @default(not_started)
+  platform         String
+  externalThreadId String?
+  lastMessageAt    DateTime?
+  lead             Lead                  @relation(fields: [leadId], references: [id])
+  messages         ConversationMessage[]
+}
+
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  from           String
+  content        String
+  sentAt         DateTime
+  raw            Json?
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model WorkflowRun {
+  id             String            @id @default(cuid())
+  type           String
+  status         WorkflowRunStatus @default(queued)
+  leadId         String?
+  campaignId     String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  errorMessage   String?
+  metadata       Json?
+  lead           Lead?             @relation(fields: [leadId], references: [id])
+  campaign       Campaign?         @relation(fields: [campaignId], references: [id])
+  artifactRefs   ArtifactRef[]
+  timelineEvents TimelineEvent[]
+}
+
+model MemoryRef {
+  id               String   @id @default(cuid())
+  leadId           String
+  memorySpaceId    String
+  memoryId         String
+  kind             String
+  summary          String
+  confidence       Float
+  sourceArtifactId String?
+  createdAt        DateTime @default(now())
+  lead             Lead     @relation(fields: [leadId], references: [id])
+}
+
+model ArtifactRef {
+  id             String       @id @default(cuid())
+  leadId         String?
+  workflowRunId  String?
+  artifactType   String
+  blobId         String
+  suiObjectId    String?
+  summary        String
+  createdAt      DateTime     @default(now())
+  verifiedStatus String
+  lead           Lead?        @relation(fields: [leadId], references: [id])
+  workflowRun    WorkflowRun? @relation(fields: [workflowRunId], references: [id])
+}
+
+model TimelineEvent {
+  id            String       @id @default(cuid())
+  leadId        String
+  workflowRunId String?
+  type          String
+  summary       String
+  memoryRefs    String[]
+  artifactRefs  String[]
+  agentName     String?
+  workerId      String?
+  createdAt     DateTime     @default(now())
+  lead          Lead         @relation(fields: [leadId], references: [id])
+  workflowRun   WorkflowRun? @relation(fields: [workflowRunId], references: [id])
+}
+
+model SocialIdentity {
+  id             String   @id @default(cuid())
+  leadId         String   @unique
+  platform       String
+  externalUserId String
+  username       String
+  profileUrl     String?
+  raw            Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  lead           Lead     @relation(fields: [leadId], references: [id])
+}
+
+model DeviceConfig {
+  id              String       @id @default(cuid())
+  platform        String
+  deviceId        String
+  adbAddress      String
+  status          DeviceStatus @default(disconnected)
+  lastConnectedAt DateTime?
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([platform, deviceId])
+}
