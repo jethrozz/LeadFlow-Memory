@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createArtifactPayload, FakeWalrusArtifactClient } from "./index.js";
+import { createArtifactPayload, FakeWalrusArtifactClient, createWalrusClientFromEnv } from "./index.js";
 
 describe("Walrus artifacts", () => {
   it("creates deterministic JSON artifact payloads", () => {
@@ -27,5 +27,12 @@ describe("Walrus artifacts", () => {
 
     expect(stored.blobId).toMatch(/^fake_blob_/);
     expect(loaded.body).toBe(payload.body);
+  });
+});
+
+describe("Walrus client configuration", () => {
+  it("uses fake client when WALRUS_MODE=fake", () => {
+    const client = createWalrusClientFromEnv({ WALRUS_MODE: "fake" });
+    expect(client).toBeInstanceOf(FakeWalrusArtifactClient);
   });
 });
