@@ -12,6 +12,7 @@ export type StoredLead = {
   intentLevel?: string;
   summary?: string;
   updatedAt?: string;
+  isDemoSeed?: boolean;
 };
 
 export type StoredMemoryRef = {

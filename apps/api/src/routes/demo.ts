@@ -8,9 +8,14 @@ export function demoRoute(services: ApiServices) {
 
   route.post("/seed-real-estate", (c) => {
     const lead = services.store.upsertLead({
-      ...leadChen,
+      id: leadChen.id,
+      campaignId: leadChen.campaignId,
+      platform: leadChen.platform,
+      status: leadChen.status,
+      memorySpaceId: leadChen.memorySpaceId ?? "memspace_default",
+      displayName: "陈薇",
       isDemoSeed: true,
-    } as never);
+    });
     return c.json({ seeded: true, leadId: lead.id });
   });
 
