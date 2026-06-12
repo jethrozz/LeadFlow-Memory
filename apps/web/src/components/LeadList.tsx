@@ -14,7 +14,22 @@ export function LeadList(props: {
           key={lead.id}
           onClick={() => props.onSelectLead(lead.id)}
         >
-          <strong>{lead.displayName}</strong>
+          <strong>
+            {lead.displayName}
+            {lead.isDemoSeed && (
+              <span style={{
+                marginLeft: '6px',
+                fontSize: '0.65em',
+                fontWeight: 'normal',
+                color: '#fff',
+                background: '#f97316',
+                borderRadius: '3px',
+                padding: '1px 5px',
+                verticalAlign: 'middle',
+                letterSpacing: '0.02em',
+              }}>演示数据</span>
+            )}
+          </strong>
           <span>{lead.intentLevel} · {lead.status}</span>
           <small>{lead.summary}</small>
         </button>

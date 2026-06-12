@@ -6,6 +6,7 @@ export type DashboardLeadItem = {
   status: string;
   summary: string;
   updatedAt: string;
+  isDemoSeed?: boolean;
 };
 
 export type DashboardLeadDetail = {
