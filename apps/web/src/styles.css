@@ -113,3 +113,18 @@ body {
   border-radius: 16px;
   background: rgba(24, 32, 26, 0.06);
 }
+
+.action-row {
+  display: grid;
+  gap: 10px;
+}
+
+.action-row button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 14px;
+  background: #18201a;
+  color: #fffaf0;
+  font-weight: 700;
+  cursor: pointer;
+}

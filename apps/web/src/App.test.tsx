@@ -50,5 +50,8 @@ describe("LeadFlow Dashboard", () => {
     expect(screen.getByText("Memory Timeline")).toBeInTheDocument();
     expect(screen.getByText("Walrus Artifacts")).toBeInTheDocument();
     expect(screen.getByText("Next Follow-up")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "同步小红书聊天" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "发送跟进私信" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "触发接力恢复" })).toBeInTheDocument();
   });
 });

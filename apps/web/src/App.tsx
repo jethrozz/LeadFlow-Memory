@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchDashboardLeadDetail, fetchDashboardLeads } from "./api";
+import { fetchDashboardLeadDetail, fetchDashboardLeads, runHandoff, sendFollowup, syncConversation } from "./api";
 import { FollowupPanel } from "./components/FollowupPanel";
 import { Inspector } from "./components/Inspector";
 import { LeadList } from "./components/LeadList";
@@ -38,6 +38,29 @@ export function App() {
     };
   }, [selectedLeadId]);
 
+  const refreshSelectedLead = async () => {
+    if (!selectedLeadId) return;
+    setDetail(await fetchDashboardLeadDetail(selectedLeadId));
+  };
+
+  const handleSync = async () => {
+    if (!selectedLeadId) return;
+    await syncConversation(selectedLeadId);
+    await refreshSelectedLead();
+  };
+
+  const handleSend = async () => {
+    if (!selectedLeadId || !detail) return;
+    await sendFollowup(selectedLeadId, detail.nextFollowup);
+    await refreshSelectedLead();
+  };
+
+  const handleHandoff = async () => {
+    if (!selectedLeadId) return;
+    await runHandoff(selectedLeadId);
+    await refreshSelectedLead();
+  };
+
   return (
     <main className="app-shell">
       <header className="hero">
@@ -55,7 +78,12 @@ export function App() {
           <Timeline detail={detail} />
         </section>
         <aside className="panel">
-          <FollowupPanel detail={detail} />
+          <FollowupPanel
+            detail={detail}
+            onSync={handleSync}
+            onSend={handleSend}
+            onHandoff={handleHandoff}
+          />
           <Inspector detail={detail} />
         </aside>
       </section>
