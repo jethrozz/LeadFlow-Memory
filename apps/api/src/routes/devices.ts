@@ -1,37 +1,30 @@
 import { Hono } from "hono";
+import { z } from "zod";
+import type { ApiServices } from "../app.js";
 
-export const devicesRoutes = new Hono();
+const DeviceBodySchema = z.object({
+  deviceId: z.string(),
+  adbAddress: z.string().optional(),
+});
 
-devicesRoutes.get("/xhs", (c) => {
-  return c.json({
-    items: [
-      {
-        platform: "xhs",
-        deviceId: "device-1",
-        adbAddress: "emulator-5554",
-        status: "disconnected",
-      },
-    ],
+export function devicesRoute(services: ApiServices) {
+  const route = new Hono();
+
+  route.post("/xhs/connect", async (c) => {
+    const body = DeviceBodySchema.parse(await c.req.json());
+    return c.json(await services.xhsChat.connectDevice(body));
   });
-});
 
-devicesRoutes.post("/xhs/connect", async (c) => {
-  const body = await c.req.json();
-  return c.json({
-    channel: "mcp-xhs-chat",
-    tool: "xhs_connect_device",
-    deviceId: body.deviceId,
-    adbAddress: body.adbAddress,
-    status: "queued",
-  }, 202);
-});
+  route.post("/xhs/disconnect", async (c) => {
+    const body = DeviceBodySchema.parse(await c.req.json());
+    return c.json(await services.xhsChat.disconnectDevice(body));
+  });
 
-devicesRoutes.post("/xhs/disconnect", async (c) => {
-  const body = await c.req.json();
-  return c.json({
-    channel: "mcp-xhs-chat",
-    tool: "xhs_disconnect_device",
-    deviceId: body.deviceId,
-    status: "queued",
-  }, 202);
-});
+  route.get("/xhs", (c) =>
+    c.json({
+      devices: [{ deviceId: "device-1", status: "connected" }],
+    }),
+  );
+
+  return route;
+}

@@ -1,43 +1,55 @@
 import { Hono } from "hono";
-import { conversationChen } from "../fixtures/demo-data.js";
+import { z } from "zod";
+import type { ApiServices } from "../app.js";
 
-export const conversationsRoutes = new Hono();
-
-conversationsRoutes.get("/:leadId/conversation", (c) => {
-  if (c.req.param("leadId") !== conversationChen.leadId) {
-    return c.json({ error: { code: "CONVERSATION_NOT_FOUND" } }, 404);
-  }
-
-  return c.json({ conversation: conversationChen });
+const XhsIdentityBodySchema = z.object({
+  deviceId: z.string(),
+  xhsUserId: z.string().optional(),
+  xhsUsername: z.string().optional(),
+  sinceTime: z.string().optional(),
 });
 
-conversationsRoutes.post("/:leadId/conversation/sync", (c) => {
-  return c.json({
-    channel: "mcp-xhs-chat",
-    workflowRun: {
-      id: "workflow_sync_queued",
-      type: "conversion",
-      status: "queued",
+const SendBodySchema = XhsIdentityBodySchema.extend({
+  message: z.string().min(1),
+});
+
+export function conversationsRoute(services: ApiServices) {
+  const route = new Hono();
+
+  route.get("/:leadId/conversation", (c) =>
+    c.json({
       leadId: c.req.param("leadId"),
-    },
-  }, 202);
-});
+      messages: [],
+    }),
+  );
 
-conversationsRoutes.post("/:leadId/conversation/send", async (c) => {
-  const body = await c.req.json();
-  return c.json({
-    channel: "mcp-xhs-chat",
-    leadId: c.req.param("leadId"),
-    message: body.message,
-    status: "queued_for_send",
-  }, 202);
-});
+  route.post("/:leadId/conversation/sync", async (c) => {
+    const body = XhsIdentityBodySchema.parse(await c.req.json());
+    const messages = await services.xhsChat.getConversation(body);
+    return c.json({
+      leadId: c.req.param("leadId"),
+      messages,
+    });
+  });
 
-conversationsRoutes.post("/:leadId/conversation/customer-reply", async (c) => {
-  const body = await c.req.json();
-  return c.json({
-    leadId: c.req.param("leadId"),
-    reply: body.content,
-    status: "accepted",
-  }, 202);
-});
+  route.post("/:leadId/conversation/send", async (c) => {
+    const body = SendBodySchema.parse(await c.req.json());
+    const result = await services.xhsChat.sendPrivateMessage(body);
+    return c.json({
+      leadId: c.req.param("leadId"),
+      ...result,
+    });
+  });
+
+  route.post("/:leadId/conversation/customer-reply", async (c) => {
+    const body = z.object({ message: z.string().min(1) }).parse(await c.req.json());
+    return c.json({
+      leadId: c.req.param("leadId"),
+      direction: "inbound",
+      content: body.message,
+      receivedAt: new Date().toISOString(),
+    });
+  });
+
+  return route;
+}

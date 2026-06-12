@@ -1,4 +1,9 @@
 import { createWorkflowService } from "@leadflow/agents";
+import {
+  createXhsChatClientFromEnv,
+  FakeXhsChatClient,
+  type XhsChatClient,
+} from "@leadflow/connectors";
 import { createLlmProviderFromEnv, FakeLlmProvider, type LlmProvider } from "@leadflow/llm";
 import { Hono } from "hono";
 import {
@@ -13,9 +18,9 @@ import {
 } from "@leadflow/walrus";
 import { artifactsRoute } from "./routes/artifacts.js";
 import { campaignsRoutes } from "./routes/campaigns.js";
-import { conversationsRoutes } from "./routes/conversations.js";
+import { conversationsRoute } from "./routes/conversations.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
-import { devicesRoutes } from "./routes/devices.js";
+import { devicesRoute } from "./routes/devices.js";
 import { leadsRoutes } from "./routes/leads.js";
 import { memoriesRoute } from "./routes/memories.js";
 import { workflowsRoute } from "./routes/workflows.js";
@@ -24,6 +29,7 @@ export type ApiServices = {
   llm: LlmProvider;
   memwal: MemWalClient;
   walrus: WalrusArtifactClient;
+  xhsChat: XhsChatClient;
   workflows: ReturnType<typeof createWorkflowService>;
 };
 
@@ -40,10 +46,12 @@ export function createFakeServices(): ApiServices {
   });
   const memwal = new FakeMemWalClient();
   const walrus = new FakeWalrusArtifactClient();
+  const xhsChat = new FakeXhsChatClient();
   return {
     llm,
     memwal,
     walrus,
+    xhsChat,
     workflows: createWorkflowService({ llm, memwal, walrus }),
   };
 }
@@ -52,10 +60,12 @@ export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Api
   const llm = createLlmProviderFromEnv(env);
   const memwal = createMemWalClientFromEnv(env);
   const walrus = createWalrusClientFromEnv(env);
+  const xhsChat = createXhsChatClientFromEnv(env);
   return {
     llm,
     memwal,
     walrus,
+    xhsChat,
     workflows: createWorkflowService({ llm, memwal, walrus }),
   };
 }
@@ -67,9 +77,9 @@ export function createApp(services: ApiServices) {
   app.route("/api/artifacts", artifactsRoute(services));
   app.route("/api/campaigns", campaignsRoutes);
   app.route("/api/leads", leadsRoutes);
-  app.route("/api/leads", conversationsRoutes);
+  app.route("/api/leads", conversationsRoute(services));
   app.route("/api/dashboard", dashboardRoutes);
-  app.route("/api/devices", devicesRoutes);
+  app.route("/api/devices", devicesRoute(services));
   app.route("/api/memories", memoriesRoute(services));
   app.route("/api/workflows", workflowsRoute(services));
 

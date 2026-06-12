@@ -26,16 +26,20 @@ describe("api app", () => {
     expect(body.error.code).toBe("LEAD_NOT_FOUND");
   });
 
-  it("accepts a conversation sync request as a skeleton endpoint", async () => {
+  it("syncs XHS conversation through connector", async () => {
     const response = await app.request("/api/leads/lead_chen/conversation/sync", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sinceTime: "2026-06-11T10:00:00.000Z" }),
+      body: JSON.stringify({
+        deviceId: "device-1",
+        xhsUserId: "xhs_001",
+        xhsUsername: "重庆买房小陈",
+        sinceTime: "2026-06-11T10:00:00.000Z",
+      }),
     });
-    expect(response.status).toBe(202);
-    const body = await response.json() as { workflowRun: { type: string }; channel: string };
-    expect(body.workflowRun.type).toBe("conversion");
-    expect(body.channel).toBe("mcp-xhs-chat");
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect((json as { messages: Array<{ content: string }> }).messages[0].content).toContain("渝北");
   });
 
   it("stores a Walrus artifact through the API", async () => {
@@ -102,5 +106,38 @@ describe("api app", () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect((json as { artifact: { blobId: string } }).artifact.blobId).toBeTruthy();
+  });
+
+  it("syncs XHS conversation through connector", async () => {
+    const response = await app.request("/api/leads/lead_001/conversation/sync", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        deviceId: "device-1",
+        xhsUserId: "xhs_001",
+        xhsUsername: "重庆买房小陈",
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect((json as { messages: Array<{ content: string }> }).messages[0].content).toContain("渝北");
+  });
+
+  it("sends XHS private message through connector", async () => {
+    const response = await app.request("/api/leads/lead_001/conversation/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        deviceId: "device-1",
+        xhsUserId: "xhs_001",
+        xhsUsername: "重庆买房小陈",
+        message: "我整理几套渝北三房给你，可以加微信吗？",
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect((json as { status: string }).status).toBe("sent");
   });
 });

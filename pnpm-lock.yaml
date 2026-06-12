@@ -32,6 +32,9 @@ importers:
       '@leadflow/agents':
         specifier: workspace:*
         version: link:../../packages/agents
+      '@leadflow/connectors':
+        specifier: workspace:*
+        version: link:../../packages/connectors
       '@leadflow/core':
         specifier: workspace:*
         version: link:../../packages/core
