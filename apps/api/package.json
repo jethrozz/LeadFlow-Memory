@@ -12,9 +12,6 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@leadflow/core": "workspace:*",
-    "@leadflow/memwal": "workspace:*",
-    "@leadflow/playbook": "workspace:*",
-    "@leadflow/walrus": "workspace:*",
     "hono": "^4.6.8",
     "zod": "^3.23.8"
   },

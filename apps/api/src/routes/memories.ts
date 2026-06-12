@@ -1,39 +1,17 @@
 import { Hono } from "hono";
-import { z } from "zod";
-import type { ApiServices } from "../app.js";
+import { memoriesChen } from "../fixtures/demo-data.js";
 
-const WriteMemoryBodySchema = z.object({
-  leadId: z.string(),
-  memorySpaceId: z.string(),
-  content: z.string().min(1),
-  metadata: z.object({
-    source: z.enum(["discovery", "conversion", "handoff", "manual"]),
-    confidence: z.number().min(0).max(1),
-    artifactRefs: z.array(z.string()),
-  }),
+export const memoriesRoutes = new Hono();
+
+memoriesRoutes.get("/:leadId/memories", (c) => {
+  return c.json({ leadId: c.req.param("leadId"), memories: memoriesChen });
 });
 
-const RecallMemoryBodySchema = z.object({
-  leadId: z.string(),
-  memorySpaceId: z.string(),
-  query: z.string(),
-  limit: z.number().int().positive().max(20),
+memoriesRoutes.post("/:leadId/memories/recall", async (c) => {
+  const body = await c.req.json();
+  return c.json({
+    leadId: c.req.param("leadId"),
+    query: body.query,
+    memories: memoriesChen.slice(0, body.limit ?? 8),
+  });
 });
-
-export function memoriesRoute(services: ApiServices) {
-  const route = new Hono();
-
-  route.post("/", async (c) => {
-    const body = WriteMemoryBodySchema.parse(await c.req.json());
-    const memory = await services.memwal.writeMemory(body);
-    return c.json(memory, 201);
-  });
-
-  route.post("/recall", async (c) => {
-    const body = RecallMemoryBodySchema.parse(await c.req.json());
-    const memories = await services.memwal.recall(body);
-    return c.json({ memories });
-  });
-
-  return route;
-}
