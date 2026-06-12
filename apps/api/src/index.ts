@@ -1,10 +1,10 @@
 import { serve } from "@hono/node-server";
-import { createApp } from "./app.js";
+import { createApp, createServicesFromEnv } from "./app.js";
 
 const port = Number(process.env.PORT ?? 3001);
 
 serve({
-  fetch: createApp().fetch,
+  fetch: createApp(createServicesFromEnv()).fetch,
   port,
 });
 
