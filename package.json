@@ -9,8 +9,7 @@
     "typecheck": "pnpm -r typecheck",
     "dev:api": "pnpm --filter @leadflow/api dev",
     "prisma:format": "prisma format --schema prisma/schema.prisma",
-    "prisma:validate": "prisma validate --schema prisma/schema.prisma",
-    "prisma:generate": "prisma generate --schema prisma/schema.prisma"
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma"
   },
   "devDependencies": {
     "@types/node": "^20.14.12",
@@ -18,8 +17,5 @@
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma", "esbuild"]
   }
 }

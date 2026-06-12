@@ -4,7 +4,7 @@ export const ProfileFieldConfigSchema = z.object({
   key: z.string(),
   label: z.string(),
   required: z.boolean(),
-  priority: z.number().int().positive(),
+  priority: z.number().int(),
   description: z.string(),
   examples: z.array(z.string()).optional(),
 });
@@ -17,7 +17,7 @@ export const ConversionPlaybookSchema = z.object({
   platforms: z.array(z.string()),
   agent: z.object({
     role: z.string(),
-    tone: z.array(z.string()),
+    tone: z.string(),
     objective: z.string(),
   }),
   primary_goals: z.array(z.string()),
@@ -26,11 +26,7 @@ export const ConversionPlaybookSchema = z.object({
   conversation_rules: z.array(z.string()),
   forbidden_claims: z.array(z.string()),
   local_knowledge: z.array(z.string()),
-  success_criteria: z.record(
-    z.object({
-      description: z.string(),
-    }),
-  ),
+  success_criteria: z.array(z.string()),
 });
 
 export type ProfileFieldConfig = z.infer<typeof ProfileFieldConfigSchema>;

@@ -1,20 +1,18 @@
-import { readFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
-import { loadPlaybookFromString } from "./loader.js";
+import { describe, it, expect } from "vitest";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
+import { loadPlaybookFromFile } from "./loader.js";
 
-describe("playbook loader", () => {
-  it("loads the Chongqing real estate playbook", async () => {
-    const yaml = await readFile(
-      "../../playbooks/real-estate-chongqing.yml",
-      "utf8",
-    );
-    const playbook = loadPlaybookFromString(yaml);
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+
+describe("loadPlaybookFromFile", () => {
+  it("loads real-estate-chongqing.yml correctly", async () => {
+    const yamlPath = resolve(__dirname, "../../../playbooks/real-estate-chongqing.yml");
+    const playbook = await loadPlaybookFromFile(yamlPath);
 
     expect(playbook.id).toBe("real-estate-chongqing");
     expect(playbook.primary_goals).toContain("get_wechat");
-    expect(playbook.profile_fields.map((field) => field.key)).toContain(
-      "budget",
-    );
+    expect(playbook.profile_fields.some((f) => f.key === "budget")).toBe(true);
     expect(playbook.conversation_rules.length).toBeGreaterThan(0);
   });
 });

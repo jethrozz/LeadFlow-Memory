@@ -175,22 +175,6 @@ export const playbookSummary: PlaybookSummary = {
   rules: ["不要一开始就索要联系方式", "每轮最多追问 1-2 个问题"],
 };
 
-export interface DeviceFixture {
-  platform: string;
-  deviceId: string;
-  adbAddress: string;
-  status: string;
-}
-
-export const deviceFixtures: DeviceFixture[] = [
-  {
-    platform: "xhs",
-    deviceId: "device-1",
-    adbAddress: "emulator-5554",
-    status: "disconnected",
-  },
-];
-
 export const activeWorkflowRun: WorkflowRun = {
   id: "workflow_conversion_001",
   type: "conversion",
