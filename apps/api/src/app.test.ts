@@ -140,4 +140,27 @@ describe("api app", () => {
     const json = await response.json();
     expect((json as { status: string }).status).toBe("sent");
   });
+
+  it("dashboard reflects workflow outputs instead of fixtures", async () => {
+    await app.request("/api/workflows/discovery/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        leadId: "lead_e2e",
+        memorySpaceId: "space_e2e",
+        sourceText: "想看看渝北 130 万以内的三房",
+      }),
+    });
+
+    const response = await app.request("/api/dashboard/leads/lead_e2e");
+    expect(response.status).toBe(200);
+    const detail = await response.json();
+    expect((detail as { memories: unknown[] }).memories.length).toBeGreaterThan(0);
+    expect((detail as { artifacts: unknown[] }).artifacts.length).toBeGreaterThan(0);
+    expect(
+      (detail as { timeline: Array<{ type: string }> }).timeline.some(
+        (e) => e.type === "lead_discovered"
+      )
+    ).toBe(true);
+  });
 });
