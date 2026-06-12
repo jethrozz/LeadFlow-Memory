@@ -1,0 +1,25 @@
+{
+  "name": "@leadflow/agents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@leadflow/core": "workspace:*",
+    "@leadflow/llm": "workspace:*",
+    "@leadflow/memwal": "workspace:*",
+    "@leadflow/playbook": "workspace:*",
+    "@leadflow/walrus": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
