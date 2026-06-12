@@ -16,6 +16,7 @@ import {
   FakeWalrusArtifactClient,
   type WalrusArtifactClient,
 } from "@leadflow/walrus";
+import { createStore, type ApiStore } from "./store.js";
 import { artifactsRoute } from "./routes/artifacts.js";
 import { campaignsRoutes } from "./routes/campaigns.js";
 import { conversationsRoute } from "./routes/conversations.js";
@@ -31,6 +32,7 @@ export type ApiServices = {
   walrus: WalrusArtifactClient;
   xhsChat: XhsChatClient;
   workflows: ReturnType<typeof createWorkflowService>;
+  store: ApiStore;
 };
 
 export function createFakeServices(): ApiServices {
@@ -53,6 +55,7 @@ export function createFakeServices(): ApiServices {
     walrus,
     xhsChat,
     workflows: createWorkflowService({ llm, memwal, walrus }),
+    store: createStore(),
   };
 }
 
@@ -67,6 +70,7 @@ export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Api
     walrus,
     xhsChat,
     workflows: createWorkflowService({ llm, memwal, walrus }),
+    store: createStore(),
   };
 }
 
