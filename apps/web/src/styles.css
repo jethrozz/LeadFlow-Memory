@@ -88,3 +88,28 @@ body {
   padding: 12px 0;
   border-bottom: 1px solid rgba(24, 32, 26, 0.1);
 }
+
+.is-selected {
+  border-color: #e16d39;
+  box-shadow: 0 14px 30px rgba(225, 109, 57, 0.16);
+}
+
+.main-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.timeline-card,
+.followup-card {
+  border-radius: 22px;
+  padding: 16px;
+  background: rgba(255, 250, 240, 0.72);
+}
+
+.timeline-event,
+.inspector-item {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(24, 32, 26, 0.06);
+}

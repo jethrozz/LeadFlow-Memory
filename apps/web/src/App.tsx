@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { fetchDashboardLeadDetail, fetchDashboardLeads } from "./api";
+import { FollowupPanel } from "./components/FollowupPanel";
+import { Inspector } from "./components/Inspector";
+import { LeadList } from "./components/LeadList";
+import { ProfilePanel } from "./components/ProfilePanel";
+import { Timeline } from "./components/Timeline";
 import type { DashboardLeadDetail, DashboardLeadItem } from "./types";
 import "./styles.css";
 
@@ -42,29 +47,16 @@ export function App() {
       </header>
       <section className="dashboard-grid">
         <aside className="panel">
-          <h2>线索列表</h2>
           {isLoading ? <p>加载线索中...</p> : null}
-          {leads.map((lead) => (
-            <button className="lead-card" key={lead.id} onClick={() => setSelectedLeadId(lead.id)}>
-              <strong>{lead.displayName}</strong>
-              <span>{lead.intentLevel} · {lead.status}</span>
-              <small>{lead.summary}</small>
-            </button>
-          ))}
+          <LeadList leads={leads} selectedLeadId={selectedLeadId} onSelectLead={setSelectedLeadId} />
         </aside>
-        <section className="panel">
-          <h2>客户长期记忆</h2>
-          <p>{detail?.profile.summary ?? "选择一个线索查看长期记忆。"}</p>
-          {detail ? Object.entries(detail.profile.fields).map(([key, field]) => (
-            <div className="field-row" key={key}>
-              <span>{field.label}</span>
-              <strong>{field.value}</strong>
-            </div>
-          )) : null}
+        <section className="panel main-panel">
+          <ProfilePanel detail={detail} />
+          <Timeline detail={detail} />
         </section>
         <aside className="panel">
-          <h2>Inspector</h2>
-          <p>{detail?.nextFollowup ?? "等待 Agent 生成下一步。"}</p>
+          <FollowupPanel detail={detail} />
+          <Inspector detail={detail} />
         </aside>
       </section>
     </main>

@@ -47,5 +47,8 @@ describe("LeadFlow Dashboard", () => {
     expect(screen.getByText("加载线索中...")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText("重庆买房小陈")).toBeInTheDocument());
     expect(screen.getByText("客户关注渝北三房。")).toBeInTheDocument();
+    expect(screen.getByText("Memory Timeline")).toBeInTheDocument();
+    expect(screen.getByText("Walrus Artifacts")).toBeInTheDocument();
+    expect(screen.getByText("Next Follow-up")).toBeInTheDocument();
   });
 });
