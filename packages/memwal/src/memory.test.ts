@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FakeMemWalClient } from "./index.js";
+import { createMemWalClientFromEnv, FakeMemWalClient } from "./index.js";
 
 describe("MemWal memory client", () => {
   it("writes and recalls lead-scoped memory", async () => {
@@ -25,5 +25,12 @@ describe("MemWal memory client", () => {
 
     expect(written.id).toMatch(/^mem_/);
     expect(recalled[0]?.content).toContain("130 万");
+  });
+});
+
+describe("MemWal client configuration", () => {
+  it("uses fake client when MEMWAL_MODE=fake", () => {
+    const client = createMemWalClientFromEnv({ MEMWAL_MODE: "fake" });
+    expect(client).toBeInstanceOf(FakeMemWalClient);
   });
 });
