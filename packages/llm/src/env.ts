@@ -11,12 +11,7 @@ export type LlmEnv = {
 
 export function createLlmProviderFromEnv(env: LlmEnv = process.env): LlmProvider {
   if (env.LLM_PROVIDER === "fake") {
-    return new FakeLlmProvider({
-      content: JSON.stringify({
-        intentLevel: "A",
-        summary: "Fake provider response for local tests.",
-      }),
-    });
+    return new FakeLlmProvider();
   }
 
   if (!env.LLM_BASE_URL || !env.LLM_API_KEY || !env.LLM_MODEL) {

@@ -35,6 +35,10 @@ export class OpenAiCompatibleProvider implements LlmProvider {
     if (!content) {
       throw new Error("LLM response did not include message content");
     }
-    return JSON.parse(content) as Record<string, unknown>;
+    try {
+      return JSON.parse(content) as Record<string, unknown>;
+    } catch {
+      throw new Error(`LLM response content is not valid JSON: ${content.slice(0, 200)}`);
+    }
   }
 }

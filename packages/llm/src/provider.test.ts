@@ -19,4 +19,8 @@ describe("LLM provider", () => {
     const provider = createLlmProviderFromEnv({ LLM_PROVIDER: "fake" });
     expect(provider).toBeInstanceOf(FakeLlmProvider);
   });
+
+  it("throws if LLM env is not configured", () => {
+    expect(() => createLlmProviderFromEnv({})).toThrow();
+  });
 });
