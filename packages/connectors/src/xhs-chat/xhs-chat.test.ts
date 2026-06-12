@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FakeXhsChatClient } from "../index.js";
+import { createXhsChatClientFromEnv, FakeXhsChatClient } from "../index.js";
 
 describe("XHS chat connector", () => {
   it("syncs conversation messages for a lead identity", async () => {
@@ -24,5 +24,12 @@ describe("XHS chat connector", () => {
     });
 
     expect(result.status).toBe("sent");
+  });
+});
+
+describe("XHS chat client configuration", () => {
+  it("uses fake client when XHS_CHAT_MODE=fake", () => {
+    const client = createXhsChatClientFromEnv({ XHS_CHAT_MODE: "fake" });
+    expect(client).toBeInstanceOf(FakeXhsChatClient);
   });
 });
