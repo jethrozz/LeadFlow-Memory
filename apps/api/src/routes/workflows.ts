@@ -52,6 +52,7 @@ export function workflowsRoute(services: ApiServices) {
       artifactType: result.artifact?.type ?? "lead_discovery_report",
       blobId: result.artifact?.blobId ?? "",
     });
+    // artifactRefs 存 Walrus blobId（外部寻址），memoryRefs 存 store 内部 id（本地追踪）
     services.store.appendTimelineEvent({
       leadId: body.leadId,
       type: "lead_discovered",
@@ -80,6 +81,7 @@ export function workflowsRoute(services: ApiServices) {
       artifactType: result.artifact?.type ?? "conversion_decision",
       blobId: result.artifact?.blobId ?? "",
     });
+    // artifactRefs 存 Walrus blobId（外部寻址），memoryRefs 存 store 内部 id（本地追踪）
     services.store.appendTimelineEvent({
       leadId: body.leadId,
       type: "conversion_decision_made",
@@ -88,14 +90,12 @@ export function workflowsRoute(services: ApiServices) {
       memoryRefs: [memoryRef.id],
       artifactRefs: [artifactRef.blobId],
     });
-    services.store.upsertLead({
-      id: body.leadId,
-      campaignId: "manual",
-      platform: "xhs",
-      status: "nurturing",
-      memorySpaceId: body.memorySpaceId,
-      displayName: body.leadId,
-    });
+
+    // conversion 仅更新 lead 状态，不覆盖 discovery 阶段的 campaignId 和 displayName
+    const existingLead = services.store.getLead(body.leadId);
+    if (existingLead) {
+      services.store.upsertLead({ ...existingLead, status: "nurturing" });
+    }
 
     return c.json(result);
   });
@@ -109,6 +109,7 @@ export function workflowsRoute(services: ApiServices) {
       artifactType: "handoff_proof",
       blobId: result.artifact?.blobId ?? "",
     });
+    // handoff 不变更 lead 状态，仅记录移交事件
     services.store.appendTimelineEvent({
       leadId: body.leadId,
       type: "handoff_recovered",
