@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 
+// Fields like status, kind, and type are intentionally string (not union) —
+// route-layer Zod schemas own the validation; the store is a thin persistence layer.
 export type StoredLead = {
   id: string;
   campaignId: string;

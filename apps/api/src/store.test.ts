@@ -69,5 +69,6 @@ describe("api store", () => {
     const messages = store.listConversationMessages("lead_001");
     expect(messages).toHaveLength(2);
     expect(messages[0]?.direction).toBe("inbound");
+    expect(store.listConversationMessages("nonexistent")).toHaveLength(0);
   });
 });
