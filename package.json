@@ -8,6 +8,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "dev:api": "pnpm --filter @leadflow/api dev",
+    "dev:web": "pnpm --filter @leadflow/web dev",
     "prisma:format": "prisma format --schema prisma/schema.prisma",
     "prisma:validate": "prisma validate --schema prisma/schema.prisma"
   },

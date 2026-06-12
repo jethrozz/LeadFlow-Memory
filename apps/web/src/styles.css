@@ -1,0 +1,59 @@
+:root {
+  color: #18201a;
+  background: #f5efe2;
+  font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(225, 109, 57, 0.26), transparent 28%),
+    linear-gradient(135deg, #f5efe2 0%, #dfe8d2 55%, #c9ddd5 100%);
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: #9a4e24;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 88px);
+  line-height: 0.92;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 300px minmax(360px, 1fr) 360px;
+  gap: 18px;
+}
+
+.panel {
+  min-height: 320px;
+  border: 1px solid rgba(24, 32, 26, 0.14);
+  border-radius: 28px;
+  padding: 20px;
+  background: rgba(255, 252, 243, 0.76);
+  box-shadow: 0 24px 70px rgba(48, 55, 43, 0.12);
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    padding: 18px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
