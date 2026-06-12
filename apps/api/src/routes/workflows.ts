@@ -1,18 +1,43 @@
 import { Hono } from "hono";
+import { z } from "zod";
+import type { ApiServices } from "../app.js";
 
-export const workflowsRoutes = new Hono();
-
-workflowsRoutes.post("/discovery/run", async (c) => {
-  const body = await c.req.json();
-  return c.json({ workflowRun: { id: "workflow_discovery_queued", type: "discovery", status: "queued", campaignId: body.campaignId } }, 202);
+const DiscoveryBodySchema = z.object({
+  leadId: z.string(),
+  memorySpaceId: z.string(),
+  sourceText: z.string().min(1),
 });
 
-workflowsRoutes.post("/conversion/run", async (c) => {
-  const body = await c.req.json();
-  return c.json({ workflowRun: { id: "workflow_conversion_queued", type: "conversion", status: "queued", leadId: body.leadId, mode: body.mode } }, 202);
+const ConversionBodySchema = z.object({
+  leadId: z.string(),
+  memorySpaceId: z.string(),
+  customerMessage: z.string().min(1),
 });
 
-workflowsRoutes.post("/handoff/run", async (c) => {
-  const body = await c.req.json();
-  return c.json({ workflowRun: { id: "workflow_handoff_queued", type: "handoff_recovery", status: "queued", leadId: body.leadId, reason: body.reason } }, 202);
+const HandoffBodySchema = z.object({
+  leadId: z.string(),
+  memorySpaceId: z.string(),
+  fromWorkerId: z.string(),
+  toWorkerId: z.string(),
 });
+
+export function workflowsRoute(services: ApiServices) {
+  const route = new Hono();
+
+  route.post("/discovery/run", async (c) => {
+    const body = DiscoveryBodySchema.parse(await c.req.json());
+    return c.json(await services.workflows.runDiscovery(body));
+  });
+
+  route.post("/conversion/run", async (c) => {
+    const body = ConversionBodySchema.parse(await c.req.json());
+    return c.json(await services.workflows.runConversion(body));
+  });
+
+  route.post("/handoff/run", async (c) => {
+    const body = HandoffBodySchema.parse(await c.req.json());
+    return c.json(await services.workflows.runHandoffRecovery(body));
+  });
+
+  return route;
+}

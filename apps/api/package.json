@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
+    "@leadflow/agents": "workspace:*",
     "@leadflow/core": "workspace:*",
+    "@leadflow/llm": "workspace:*",
     "@leadflow/memwal": "workspace:*",
     "@leadflow/playbook": "workspace:*",
     "@leadflow/walrus": "workspace:*",

@@ -87,4 +87,20 @@ describe("api app", () => {
     const json = await recallResponse.json() as { memories: Array<{ content: string }> };
     expect(json.memories[0].content).toContain("渝北");
   });
+
+  it("runs discovery workflow through the API", async () => {
+    const response = await app.request("/api/workflows/discovery/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        leadId: "lead_001",
+        memorySpaceId: "space_001",
+        sourceText: "想看看渝北 130 万以内的三房",
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect((json as { artifact: { blobId: string } }).artifact.blobId).toBeTruthy();
+  });
 });
