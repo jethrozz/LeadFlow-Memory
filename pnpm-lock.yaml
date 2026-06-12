@@ -29,9 +29,15 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.19.14(hono@4.12.25)
+      '@leadflow/agents':
+        specifier: workspace:*
+        version: link:../../packages/agents
       '@leadflow/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@leadflow/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@leadflow/memwal':
         specifier: workspace:*
         version: link:../../packages/memwal
@@ -58,6 +64,34 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.43)
 
+  packages/agents:
+    dependencies:
+      '@leadflow/core':
+        specifier: workspace:*
+        version: link:../core
+      '@leadflow/llm':
+        specifier: workspace:*
+        version: link:../llm
+      '@leadflow/memwal':
+        specifier: workspace:*
+        version: link:../memwal
+      '@leadflow/playbook':
+        specifier: workspace:*
+        version: link:../playbook
+      '@leadflow/walrus':
+        specifier: workspace:*
+        version: link:../walrus
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@20.19.43)
+
   packages/core:
     dependencies:
       zod:
@@ -76,6 +110,19 @@ importers:
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@20.19.43)
+
+  packages/llm:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
     devDependencies:
       typescript:
         specifier: ^5.6.3
