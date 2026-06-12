@@ -1,14 +1,31 @@
 import { Hono } from "hono";
-import { dashboardLeadDetail, dashboardLeadItems } from "../fixtures/demo-data.js";
+import type { ApiServices } from "../app.js";
 
-export const leadsRoutes = new Hono();
+export function leadsRoutes(services: ApiServices) {
+  const route = new Hono();
 
-leadsRoutes.get("/", (c) => c.json({ items: dashboardLeadItems }));
+  route.get("/", (c) => {
+    const leads = services.store.listLeads();
+    const items = leads.map((lead) => ({
+      id: lead.id,
+      displayName: lead.displayName,
+      platform: lead.platform,
+      status: lead.status,
+      intentLevel: lead.intentLevel,
+      summary: lead.summary,
+      updatedAt: lead.updatedAt,
+    }));
+    return c.json({ items });
+  });
 
-leadsRoutes.get("/:leadId", (c) => {
-  if (c.req.param("leadId") !== dashboardLeadDetail.lead.id) {
-    return c.json({ error: { code: "LEAD_NOT_FOUND" } }, 404);
-  }
+  route.get("/:leadId", (c) => {
+    const leadId = c.req.param("leadId");
+    const lead = services.store.getLead(leadId);
+    if (!lead) {
+      return c.json({ error: { code: "LEAD_NOT_FOUND" } }, 404);
+    }
+    return c.json({ lead });
+  });
 
-  return c.json({ lead: dashboardLeadDetail.lead, profile: dashboardLeadDetail.profile });
-});
+  return route;
+}

@@ -21,6 +21,7 @@ import { artifactsRoute } from "./routes/artifacts.js";
 import { campaignsRoutes } from "./routes/campaigns.js";
 import { conversationsRoute } from "./routes/conversations.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
+import { demoRoute } from "./routes/demo.js";
 import { devicesRoute } from "./routes/devices.js";
 import { leadsRoutes } from "./routes/leads.js";
 import { memoriesRoute } from "./routes/memories.js";
@@ -79,13 +80,14 @@ export function createApp(services: ApiServices) {
 
   app.get("/health", (c) => c.json({ ok: true }));
   app.route("/api/artifacts", artifactsRoute(services));
-  app.route("/api/campaigns", campaignsRoutes);
-  app.route("/api/leads", leadsRoutes);
+  app.route("/api/campaigns", campaignsRoutes(services));
+  app.route("/api/leads", leadsRoutes(services));
   app.route("/api/leads", conversationsRoute(services));
-  app.route("/api/dashboard", dashboardRoutes);
+  app.route("/api/dashboard", dashboardRoutes(services));
   app.route("/api/devices", devicesRoute(services));
   app.route("/api/memories", memoriesRoute(services));
   app.route("/api/workflows", workflowsRoute(services));
+  app.route("/api/demo", demoRoute(services));
 
   return app;
 }
