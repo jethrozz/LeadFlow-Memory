@@ -104,7 +104,16 @@ export function leadsRoutes(services: ApiServices) {
         createArtifactPayload({
           leadId,
           type: "source_snapshot",
-          data: { sourceText: body.sourceText ?? body.summary, createdAt: new Date().toISOString() },
+          data: {
+            sourceText: body.sourceText ?? body.summary,
+            // 身份信息一并留档，便于造数据测试转化 agent / 从 blob 溯源用户
+            author: {
+              platform: body.platform,
+              redId: body.redId,
+              displayName: body.displayName,
+            },
+            createdAt: new Date().toISOString(),
+          },
         }),
       );
       artifactBlobId = artifact.blobId;
