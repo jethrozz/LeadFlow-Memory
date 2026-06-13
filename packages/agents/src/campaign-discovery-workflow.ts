@@ -3,6 +3,7 @@ import { runDiscoveryWorkflow } from "./discovery-workflow.js";
 import type {
   CampaignDiscoveryInput,
   CampaignDiscoveryResult,
+  DiscoveredCampaignLead,
   WorkflowServices,
 } from "./types.js";
 
@@ -12,6 +13,27 @@ const DEFAULT_DELAY_MS = 2000;
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// hasLeadIntent 门槛较宽，发现 Agent 可能进一步判定为 Ignore（如中介自荐、已购房）。
+// 只把非 Ignore 的意向落库为线索，避免污染线索列表。
+function isQualifiedIntent(intentLevel: string): boolean {
+  return intentLevel.trim().toLowerCase() !== "ignore";
+}
+
+/** 调用 user_profile 获取小红书号（redId），失败时静默返回 undefined。 */
+async function fetchRedId(
+  services: WorkflowServices,
+  userId: string,
+  xsecToken: string,
+): Promise<string | undefined> {
+  if (!services.xhsDiscovery?.getUserProfile) return undefined;
+  try {
+    const profile = await services.xhsDiscovery.getUserProfile({ userId, xsecToken });
+    return profile.redId;
+  } catch {
+    return undefined;
+  }
 }
 
 async function isRelevant(
@@ -47,7 +69,13 @@ export async function runCampaignDiscoveryWorkflow(
   const maxPosts = input.maxPostsPerRun ?? DEFAULT_MAX_POSTS;
   const maxComments = input.maxCommentsPerPost ?? DEFAULT_MAX_COMMENTS;
   const delayMs = input.delayMs ?? DEFAULT_DELAY_MS;
+  const targetLeadCount = input.targetLeadCount ?? 0; // 0 = 不限制
+  const existingIds = input.existingLeadExternalIds ?? new Set<string>();
+  const onProgress = input.onProgress;
+
+  const playbook = input.playbook;
   const allArtifacts: string[] = [];
+  const leads: DiscoveredCampaignLead[] = [];
   let searched = 0;
   let relevant = 0;
   let leadsCreated = 0;
@@ -62,6 +90,9 @@ export async function runCampaignDiscoveryWorkflow(
 
   // Step 2-7: 过滤 → 获取详情 → 识别意向 → 逐条 discovery
   for (const post of posts) {
+    // 目标制：已采集够数，提前退出
+    if (targetLeadCount > 0 && leadsCreated >= targetLeadCount) break;
+
     const relevantFlag = await isRelevant(services, keyword, post.content ?? post.title ?? "");
     if (!relevantFlag) {
       skipped++;
@@ -72,11 +103,13 @@ export async function runCampaignDiscoveryWorkflow(
     await delay(delayMs);
 
     // Step 3: 获取帖子详情和评论
-    const detail = await services.xhsDiscovery.getPostWithComments({
-      externalId: post.externalId,
-      url: post.url,
-      maxComments,
-    });
+    const detail = await services.xhsDiscovery
+      .getPostWithComments({ externalId: post.externalId, url: post.url, maxComments })
+      .catch(() => null);
+    if (!detail) {
+      skipped++;
+      continue;
+    }
 
     await delay(delayMs);
 
@@ -90,21 +123,63 @@ export async function runCampaignDiscoveryWorkflow(
     );
     allArtifacts.push(snapshotArtifact.blobId);
 
-    // Step 5: 检查帖子作者是否有购房意向
-    const postHasIntent = await hasLeadIntent(services, detail.post.content);
-    if (postHasIntent) {
-      const leadId = `lead_xhs_${post.externalId}`;
-      const memorySpaceId = `space_${leadId}`;
-      await runDiscoveryWorkflow(services, {
-        leadId,
-        memorySpaceId,
-        sourceText: `[小红书帖子] 作者：${detail.post.authorName ?? "未知"}\n\n${detail.post.content}`,
-      });
-      leadsCreated++;
+    // Step 5: 检查帖子作者是否有购房意向（去重：跳过已存在的 externalId）
+    const postExternalId = post.externalId;
+    if (!existingIds.has(postExternalId)) {
+      const postHasIntent = await hasLeadIntent(services, detail.post.content);
+      if (postHasIntent) {
+        const leadId = `lead_xhs_${post.externalId}`;
+        const memorySpaceId = `space_${leadId}`;
+        const sourceText = `[小红书帖子] 作者：${detail.post.authorName ?? "未知"}\n\n${detail.post.content}`;
+        const discovery = await runDiscoveryWorkflow(services, {
+          leadId,
+          memorySpaceId,
+          sourceText,
+          playbook,
+        });
+        if (isQualifiedIntent(discovery.intentLevel)) {
+          existingIds.add(postExternalId); // 标记为已处理
+          // 获取小红书号（redId）。user_profile 的 xsec_token 必须来自 search_feeds 阶段的
+          // post.xsecToken——get_feed_detail 的响应往往不回带 token（detail.post.xsecToken 为空）。
+          const authorRedId = detail.post.authorUserId && post.xsecToken
+            ? await fetchRedId(services, detail.post.authorUserId, post.xsecToken)
+            : undefined;
+          await delay(delayMs);
+          leads.push({
+            leadId,
+            memorySpaceId,
+            platform: "xhs",
+            displayName: detail.post.authorName ?? leadId,
+            authorUserId: detail.post.authorUserId,
+            authorRedId,
+            sourceType: "post",
+            sourceText,
+            intentLevel: discovery.intentLevel,
+            summary: discovery.summary,
+            extractedFields: discovery.extractedFields,
+            needs: discovery.needs,
+            concerns: discovery.concerns,
+            memoryRef: discovery.memoryRef,
+            sourceArtifactBlobId: snapshotArtifact.blobId,
+            reportArtifactBlobId: discovery.artifact.blobId,
+          });
+          leadsCreated++;
+          onProgress?.({ searched, relevant, leadsCreated, skipped });
+
+          // 目标制：采集够数，提前退出
+          if (targetLeadCount > 0 && leadsCreated >= targetLeadCount) break;
+        }
+      }
     }
 
     // Step 6: 检查评论区意向
     for (const comment of detail.comments) {
+      // 目标制：每条评论前也检查
+      if (targetLeadCount > 0 && leadsCreated >= targetLeadCount) break;
+
+      const commentExternalId = comment.externalId;
+      if (existingIds.has(commentExternalId)) continue; // 去重
+
       const commentHasIntent = await hasLeadIntent(services, comment.content);
       if (!commentHasIntent) continue;
 
@@ -124,12 +199,41 @@ export async function runCampaignDiscoveryWorkflow(
       );
       allArtifacts.push(commentSnapshotArtifact.blobId);
 
-      await runDiscoveryWorkflow(services, {
+      const commentSourceText = `[小红书评论] 来自帖子：${detail.post.title ?? post.externalId}\n作者：${comment.authorName ?? "未知"}\n\n${comment.content}`;
+      const commentDiscovery = await runDiscoveryWorkflow(services, {
         leadId: commentLeadId,
         memorySpaceId: commentMemorySpaceId,
-        sourceText: `[小红书评论] 来自帖子：${detail.post.title ?? post.externalId}\n作者：${comment.authorName ?? "未知"}\n\n${comment.content}`,
+        sourceText: commentSourceText,
+        playbook,
       });
-      leadsCreated++;
+      if (isQualifiedIntent(commentDiscovery.intentLevel)) {
+        existingIds.add(commentExternalId); // 标记为已处理
+        // 获取小红书号（redId），用帖子的 xsecToken
+        const commentRedId = comment.authorUserId && post.xsecToken
+          ? await fetchRedId(services, comment.authorUserId, post.xsecToken)
+          : undefined;
+        await delay(delayMs);
+        leads.push({
+          leadId: commentLeadId,
+          memorySpaceId: commentMemorySpaceId,
+          platform: "xhs",
+          displayName: comment.authorName ?? commentLeadId,
+          authorUserId: comment.authorUserId,
+          authorRedId: commentRedId,
+          sourceType: "comment",
+          sourceText: commentSourceText,
+          intentLevel: commentDiscovery.intentLevel,
+          summary: commentDiscovery.summary,
+          extractedFields: commentDiscovery.extractedFields,
+          needs: commentDiscovery.needs,
+          concerns: commentDiscovery.concerns,
+          memoryRef: commentDiscovery.memoryRef,
+          sourceArtifactBlobId: commentSnapshotArtifact.blobId,
+          reportArtifactBlobId: commentDiscovery.artifact.blobId,
+        });
+        leadsCreated++;
+        onProgress?.({ searched, relevant, leadsCreated, skipped });
+      }
 
       await delay(delayMs);
     }
@@ -142,5 +246,6 @@ export async function runCampaignDiscoveryWorkflow(
     leadsCreated,
     skipped,
     artifacts: allArtifacts,
+    leads,
   };
 }

@@ -81,9 +81,74 @@ export type StoredNextFollowup = {
   requiresHumanApproval?: boolean;
 };
 
-export type ApiStore = ReturnType<typeof createStore>;
+// --- Async store interface ---
 
-export function createStore() {
+export interface ApiStore {
+  // Campaigns
+  listCampaigns(): Promise<Record<string, unknown>[]>;
+  getCampaign(id: string): Promise<Record<string, unknown> | undefined>;
+  upsertCampaign(campaign: Record<string, unknown>): Promise<Record<string, unknown>>;
+
+  // Leads
+  upsertLead(lead: StoredLead): Promise<StoredLead>;
+  getLead(leadId: string): Promise<StoredLead | undefined>;
+  listLeads(): Promise<StoredLead[]>;
+
+  // Memory refs
+  appendMemoryRef(input: Omit<StoredMemoryRef, "id" | "createdAt">): Promise<StoredMemoryRef>;
+  listMemoryRefs(leadId: string): Promise<StoredMemoryRef[]>;
+
+  // Artifact refs
+  appendArtifactRef(input: Omit<StoredArtifactRef, "id" | "createdAt">): Promise<StoredArtifactRef>;
+  listArtifactRefs(leadId: string): Promise<StoredArtifactRef[]>;
+
+  // Timeline events
+  appendTimelineEvent(input: Omit<StoredTimelineEvent, "id" | "createdAt">): Promise<StoredTimelineEvent>;
+  listTimelineEvents(leadId: string): Promise<StoredTimelineEvent[]>;
+
+  // Conversations
+  appendConversationMessage(
+    leadId: string,
+    input: Omit<StoredConversationMessage, "id">,
+  ): Promise<StoredConversationMessage>;
+  listConversationMessages(leadId: string): Promise<StoredConversationMessage[]>;
+
+  // Profiles
+  upsertProfile(input: StoredProfile): Promise<StoredProfile>;
+  getProfile(leadId: string): Promise<StoredProfile | undefined>;
+
+  // Next followup
+  upsertNextFollowup(input: StoredNextFollowup): Promise<StoredNextFollowup>;
+  getNextFollowup(leadId: string): Promise<StoredNextFollowup | undefined>;
+
+  // Social identity (小红书号等外部平台身份)
+  // externalUserId 存平台内部 user_id（发现阶段一定能拿到）；
+  // redId 存小红书号（需进用户详情页换取，供 mcp-xhs-chat adb 搜索用），两者区分存储。
+  upsertSocialIdentity(input: {
+    leadId: string;
+    platform: string;
+    externalUserId: string;
+    redId?: string;
+    username?: string;
+  }): Promise<void>;
+
+  // Workflow runs
+  createWorkflowRun(input: {
+    type: string;
+    campaignId?: string;
+    leadId?: string;
+    metadata?: unknown;
+  }): Promise<{ id: string; status: string }>;
+  updateWorkflowRun(
+    id: string,
+    data: { status?: string; completedAt?: Date; errorMessage?: string; metadata?: unknown },
+  ): Promise<void>;
+  listWorkflowRuns(campaignId?: string): Promise<Array<{ id: string; type: string; status: string; startedAt: Date | null; completedAt: Date | null; errorMessage: string | null; metadata: unknown; campaignId: string | null }>>;
+}
+
+// --- In-memory implementation (for tests / fake mode) ---
+
+export function createMemoryStore(): ApiStore {
   const campaigns = new Map<string, Record<string, unknown>>();
   const leads = new Map<string, StoredLead>();
   const memoryRefs = new Map<string, StoredMemoryRef[]>();
@@ -92,6 +157,17 @@ export function createStore() {
   const conversations = new Map<string, StoredConversationMessage[]>();
   const profiles = new Map<string, StoredProfile>();
   const nextFollowups = new Map<string, StoredNextFollowup>();
+  const workflowRuns: Array<{
+    id: string;
+    type: string;
+    status: string;
+    startedAt: Date | null;
+    completedAt: Date | null;
+    errorMessage: string | null;
+    metadata: unknown;
+    campaignId: string | null;
+    leadId: string | null;
+  }> = [];
 
   const push = <T>(map: Map<string, T[]>, key: string, item: T): T => {
     const list = map.get(key) ?? [];
@@ -101,54 +177,57 @@ export function createStore() {
   };
 
   return {
-    campaigns,
+    // Campaigns
+    listCampaigns: async () => [...campaigns.values()],
+    getCampaign: async (id) => campaigns.get(id),
+    upsertCampaign: async (campaign) => {
+      campaigns.set(campaign.id as string, campaign);
+      return campaign;
+    },
 
-    upsertLead(lead: StoredLead): StoredLead {
+    // Leads
+    upsertLead: async (lead) => {
       const next = { ...lead, updatedAt: new Date().toISOString() };
       leads.set(lead.id, next);
       return next;
     },
-    getLead: (leadId: string) => leads.get(leadId),
-    listLeads: () => [...leads.values()],
+    getLead: async (leadId) => leads.get(leadId),
+    listLeads: async () => [...leads.values()],
 
-    appendMemoryRef(input: Omit<StoredMemoryRef, "id" | "createdAt">): StoredMemoryRef {
-      return push(memoryRefs, input.leadId, {
+    // Memory refs
+    appendMemoryRef: async (input) =>
+      push(memoryRefs, input.leadId, {
         ...input,
         id: `memref_${randomUUID()}`,
         createdAt: new Date().toISOString(),
-      });
-    },
-    listMemoryRefs: (leadId: string) => memoryRefs.get(leadId) ?? [],
+      }),
+    listMemoryRefs: async (leadId) => memoryRefs.get(leadId) ?? [],
 
-    appendArtifactRef(input: Omit<StoredArtifactRef, "id" | "createdAt">): StoredArtifactRef {
-      return push(artifactRefs, input.leadId, {
+    // Artifact refs
+    appendArtifactRef: async (input) =>
+      push(artifactRefs, input.leadId, {
         ...input,
         id: `artref_${randomUUID()}`,
         createdAt: new Date().toISOString(),
-      });
-    },
-    listArtifactRefs: (leadId: string) => artifactRefs.get(leadId) ?? [],
+      }),
+    listArtifactRefs: async (leadId) => artifactRefs.get(leadId) ?? [],
 
-    appendTimelineEvent(input: Omit<StoredTimelineEvent, "id" | "createdAt">): StoredTimelineEvent {
-      return push(timelineEvents, input.leadId, {
+    // Timeline events
+    appendTimelineEvent: async (input) =>
+      push(timelineEvents, input.leadId, {
         ...input,
         id: `evt_${randomUUID()}`,
         createdAt: new Date().toISOString(),
-      });
-    },
-    listTimelineEvents: (leadId: string) => timelineEvents.get(leadId) ?? [],
+      }),
+    listTimelineEvents: async (leadId) => timelineEvents.get(leadId) ?? [],
 
-    appendConversationMessage(
-      leadId: string,
-      input: Omit<StoredConversationMessage, "id">,
-    ): StoredConversationMessage {
-      return push(conversations, leadId, { ...input, id: `msg_${randomUUID()}` });
-    },
-    listConversationMessages: (leadId: string) => conversations.get(leadId) ?? [],
+    // Conversations
+    appendConversationMessage: async (leadId, input) =>
+      push(conversations, leadId, { ...input, id: `msg_${randomUUID()}` }),
+    listConversationMessages: async (leadId) => conversations.get(leadId) ?? [],
 
-    // upsertProfile merges fields/needs/concerns so discovery + conversion can each
-    // contribute a slice without clobbering the other's extracted data.
-    upsertProfile(input: StoredProfile): StoredProfile {
+    // Profiles
+    upsertProfile: async (input) => {
       const existing = profiles.get(input.leadId);
       const next: StoredProfile = {
         leadId: input.leadId,
@@ -161,12 +240,58 @@ export function createStore() {
       profiles.set(input.leadId, next);
       return next;
     },
-    getProfile: (leadId: string) => profiles.get(leadId),
+    getProfile: async (leadId) => profiles.get(leadId),
 
-    upsertNextFollowup(input: StoredNextFollowup): StoredNextFollowup {
+    // Next followup
+    upsertNextFollowup: async (input) => {
       nextFollowups.set(input.leadId, input);
       return input;
     },
-    getNextFollowup: (leadId: string) => nextFollowups.get(leadId),
+    getNextFollowup: async (leadId) => nextFollowups.get(leadId),
+
+    // Social identity
+    upsertSocialIdentity: async () => {},
+
+    // Workflow runs
+    createWorkflowRun: async (input) => {
+      const run = {
+        id: `run_${randomUUID()}`,
+        type: input.type,
+        status: "running",
+        startedAt: new Date(),
+        completedAt: null as Date | null,
+        errorMessage: null as string | null,
+        metadata: input.metadata ?? null,
+        campaignId: input.campaignId ?? null,
+        leadId: input.leadId ?? null,
+      };
+      workflowRuns.push(run);
+      return { id: run.id, status: run.status };
+    },
+    updateWorkflowRun: async (id, data) => {
+      const run = workflowRuns.find((r) => r.id === id);
+      if (run) {
+        if (data.status) run.status = data.status;
+        if (data.completedAt) run.completedAt = data.completedAt;
+        if (data.errorMessage !== undefined) run.errorMessage = data.errorMessage;
+        if (data.metadata !== undefined) run.metadata = data.metadata;
+      }
+    },
+    listWorkflowRuns: async (campaignId) =>
+      workflowRuns
+        .filter((r) => !campaignId || r.campaignId === campaignId)
+        .map((r) => ({
+          id: r.id,
+          type: r.type,
+          status: r.status,
+          startedAt: r.startedAt,
+          completedAt: r.completedAt,
+          errorMessage: r.errorMessage,
+          metadata: r.metadata,
+          campaignId: r.campaignId,
+        })),
   };
 }
+
+// Backward compat alias
+export const createStore = createMemoryStore;

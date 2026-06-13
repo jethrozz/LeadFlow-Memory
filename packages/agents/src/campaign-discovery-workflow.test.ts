@@ -38,6 +38,29 @@ describe("campaign discovery workflow", () => {
     expect(result.searched).toBeGreaterThan(0);
     expect(result.leadsCreated).toBeGreaterThan(0);
     expect(result.artifacts.length).toBeGreaterThan(0);
+    expect(result.leads.length).toBe(result.leadsCreated);
+    expect(result.leads[0]).toMatchObject({ platform: "xhs", leadId: expect.any(String) });
+  });
+
+  it("captures user_id and redId separately for post-author and comment leads", async () => {
+    const services = makeServices();
+    const result = await runCampaignDiscoveryWorkflow(services, {
+      campaignId: "campaign_test",
+      seedKeywords: ["渝北三房"],
+      maxPostsPerRun: 2,
+      maxCommentsPerPost: 5,
+      delayMs: 0,
+    });
+
+    // 情况 1：帖子作者有意向——只能拿到 user_id，redId 需用搜索阶段的 xsecToken 进详情页换取
+    const postLead = result.leads.find((l) => l.sourceType === "post");
+    expect(postLead?.authorUserId).toBe("xhs_user_001");
+    expect(postLead?.authorRedId).toBe("red_chongqing_001");
+
+    // 情况 2：宣传帖评论区有意向用户——同样 user_id 与 redId 都要拿到且区分
+    const commentLead = result.leads.find((l) => l.sourceType === "comment");
+    expect(commentLead?.authorUserId).toBe("xhs_user_003");
+    expect(commentLead?.authorRedId).toBe("red_observer_003");
   });
 
   it("throws if xhsDiscovery is not provided", async () => {

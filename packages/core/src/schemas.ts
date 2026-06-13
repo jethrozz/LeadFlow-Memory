@@ -181,6 +181,7 @@ export const SocialIdentitySchema = z.object({
   leadId: z.string(),
   platform: SocialPlatformSchema,
   externalUserId: z.string(),
+  redId: z.string().optional(),
   username: z.string(),
   profileUrl: z.string().url().optional(),
   raw: z.unknown().optional(),

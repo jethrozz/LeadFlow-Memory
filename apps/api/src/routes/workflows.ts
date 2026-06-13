@@ -1,7 +1,21 @@
+import { resolve } from "node:path";
 import { Hono } from "hono";
 import { z } from "zod";
+import type { ConversionPlaybook } from "@leadflow/playbook";
 import type { ApiServices } from "../app.js";
 import type { StoredProfileField } from "../store.js";
+
+const PLAYBOOKS_DIR = resolve(import.meta.dirname, "../../../playbooks");
+
+async function loadPlaybook(playbookId?: string): Promise<ConversionPlaybook | undefined> {
+  if (!playbookId) return undefined;
+  try {
+    const { loadPlaybookFromFile } = await import("@leadflow/playbook");
+    return await loadPlaybookFromFile(resolve(PLAYBOOKS_DIR, `${playbookId}.yml`));
+  } catch {
+    return undefined;
+  }
+}
 
 // 中文标签映射：用于把 LLM 抽取的英文字段键渲染成画像面板里的标签。
 const FIELD_LABELS: Record<string, string> = {
@@ -64,32 +78,143 @@ export function workflowsRoute(services: ApiServices) {
     // Campaign 模式：有 campaignId 且没有 sourceText
     if ("campaignId" in body && !("sourceText" in body)) {
       const { runCampaignDiscoveryWorkflow } = await import("@leadflow/agents");
-      const campaign = services.store.campaigns.get(body.campaignId);
+      const campaign = await services.store.getCampaign(body.campaignId);
       const seedKeywords = body.seedKeywords ?? (campaign as { seedKeywords?: string[] })?.seedKeywords ?? [body.campaignId];
+      const targetLeadCount = (campaign as { targetLeadCount?: number })?.targetLeadCount ?? 10;
+      const playbook = await loadPlaybook((campaign as { playbookId?: string })?.playbookId);
+
+      // 创建 WorkflowRun 记录
+      const workflowRun = await services.store.createWorkflowRun({
+        type: "discovery",
+        campaignId: body.campaignId,
+        metadata: { searched: 0, relevant: 0, leadsCreated: 0, skipped: 0 },
+      });
+
+      // 收集已有线索的 externalId，用于跨运行去重
+      const existingLeads = await services.store.listLeads();
+      const existingExternalIds = new Set<string>();
+      for (const lead of existingLeads) {
+        // leadId 格式: lead_xhs_{externalId} 或 lead_xhs_comment_{externalId}
+        const match = lead.id.match(/^lead_xhs_(?:comment_)?(.+)$/);
+        if (match) existingExternalIds.add(match[1]);
+      }
+
       const workflowServices = {
         llm: services.llm,
         memwal: services.memwal,
         walrus: services.walrus,
         xhsDiscovery: services.xhsDiscovery,
       };
-      const result = await runCampaignDiscoveryWorkflow(
-        workflowServices,
-        {
+
+      let result: Awaited<ReturnType<typeof runCampaignDiscoveryWorkflow>>;
+      try {
+        result = await runCampaignDiscoveryWorkflow(
+          workflowServices,
+          {
+            campaignId: body.campaignId,
+            seedKeywords,
+            maxPostsPerRun: body.maxPostsPerRun,
+            maxCommentsPerPost: body.maxCommentsPerPost,
+            delayMs: Number(process.env.XHS_DISCOVERY_DELAY_MS ?? 2000),
+            targetLeadCount,
+            existingLeadExternalIds: existingExternalIds,
+            playbook,
+            onProgress: async (progress) => {
+              await services.store.updateWorkflowRun(workflowRun.id, {
+                metadata: progress,
+              }).catch(() => {}); // 静默失败，不阻塞主流程
+            },
+          },
+        );
+
+        // 标记运行成功
+        await services.store.updateWorkflowRun(workflowRun.id, {
+          status: "succeeded",
+          completedAt: new Date(),
+          metadata: {
+            searched: result.searched,
+            relevant: result.relevant,
+            leadsCreated: result.leadsCreated,
+            skipped: result.skipped,
+          },
+        });
+      } catch (err) {
+        // 标记运行失败
+        await services.store.updateWorkflowRun(workflowRun.id, {
+          status: "failed",
+          completedAt: new Date(),
+          errorMessage: err instanceof Error ? err.message : String(err),
+        }).catch(() => {});
+        throw err;
+      }
+
+      // 把 campaign 发现的每条线索写入 store，使其出现在 Dashboard。
+      for (const lead of result.leads) {
+        await services.store.upsertLead({
+          id: lead.leadId,
           campaignId: body.campaignId,
-          seedKeywords,
-          maxPostsPerRun: body.maxPostsPerRun,
-          maxCommentsPerPost: body.maxCommentsPerPost,
-          delayMs: Number(process.env.XHS_DISCOVERY_DELAY_MS ?? 2000),
-        },
-      );
-      return c.json(result);
+          platform: lead.platform,
+          status: "discovered",
+          memorySpaceId: lead.memorySpaceId,
+          displayName: lead.displayName,
+          summary: lead.summary,
+          intentLevel: lead.intentLevel,
+        });
+        await services.store.upsertProfile({
+          leadId: lead.leadId,
+          summary: lead.summary,
+          sourceNote: lead.sourceText,
+          needs: lead.needs,
+          concerns: lead.concerns,
+          fields: toProfileFields(lead.extractedFields),
+        });
+        const memoryRef = await services.store.appendMemoryRef({
+          leadId: lead.leadId,
+          memoryId: lead.memoryRef,
+          kind: "source_evidence",
+          summary: lead.summary,
+          sourceArtifactBlobId: lead.sourceArtifactBlobId,
+        });
+        await services.store.appendArtifactRef({
+          leadId: lead.leadId,
+          artifactType: "source_snapshot",
+          blobId: lead.sourceArtifactBlobId,
+        });
+        await services.store.appendArtifactRef({
+          leadId: lead.leadId,
+          artifactType: "lead_discovery_report",
+          blobId: lead.reportArtifactBlobId,
+        });
+        await services.store.appendTimelineEvent({
+          leadId: lead.leadId,
+          type: "lead_discovered",
+          summary: lead.summary,
+          agentName: "Discovery Agent",
+          memoryRefs: [memoryRef.id],
+          artifactRefs: [lead.sourceArtifactBlobId],
+        });
+
+        // 存储小红书用户身份：externalUserId 存 user_id（一定有），redId 存小红书号
+        // （供 mcp-xhs-chat adb 搜索用户），两者区分存储，互不覆盖。
+        if (lead.authorUserId || lead.authorRedId) {
+          await services.store.upsertSocialIdentity({
+            leadId: lead.leadId,
+            platform: "xhs",
+            externalUserId: lead.authorUserId ?? lead.authorRedId!,
+            redId: lead.authorRedId,
+            username: lead.displayName,
+          });
+        }
+      }
+
+      return c.json({ ...result, workflowRunId: workflowRun.id });
     }
 
     // 单源模式：有 sourceText（兜底）
     const singleBody = body as z.infer<typeof SingleSourceDiscoveryBodySchema>;
     const result = await services.workflows.runDiscovery(singleBody);
 
-    services.store.upsertLead({
+    await services.store.upsertLead({
       id: singleBody.leadId,
       campaignId: singleBody.campaignId ?? "manual",
       platform: "xhs",
@@ -100,31 +225,29 @@ export function workflowsRoute(services: ApiServices) {
       intentLevel: result.intentLevel,
     });
     const discoveryFields = toProfileFields(result.extractedFields);
-    services.store.upsertProfile({
+    await services.store.upsertProfile({
       leadId: singleBody.leadId,
       summary: result.summary ?? "",
       sourceNote: singleBody.sourceText,
-      // needs：取 budget 以外的抽取字段值作为标签（户型、区域等）
       needs: Object.entries(result.extractedFields)
         .filter(([key, value]) => key !== "budget" && value != null && value !== "")
         .map(([, value]) => String(value)),
       concerns: [],
       fields: discoveryFields,
     });
-    const memoryRef = services.store.appendMemoryRef({
+    const memoryRef = await services.store.appendMemoryRef({
       leadId: singleBody.leadId,
       memoryId: result.memoryRef ?? "",
       kind: "source_evidence",
       summary: result.summary ?? "",
       sourceArtifactBlobId: result.artifact?.blobId,
     });
-    const artifactRef = services.store.appendArtifactRef({
+    const artifactRef = await services.store.appendArtifactRef({
       leadId: singleBody.leadId,
       artifactType: result.artifact?.type ?? "lead_discovery_report",
       blobId: result.artifact?.blobId ?? "",
     });
-    // artifactRefs 存 Walrus blobId（外部寻址），memoryRefs 存 store 内部 id（本地追踪）
-    services.store.appendTimelineEvent({
+    await services.store.appendTimelineEvent({
       leadId: singleBody.leadId,
       type: "lead_discovered",
       summary: result.summary ?? "Discovery workflow completed",
@@ -140,20 +263,19 @@ export function workflowsRoute(services: ApiServices) {
     const body = ConversionBodySchema.parse(await c.req.json());
     const result = await services.workflows.runConversion(body);
 
-    const memoryRef = services.store.appendMemoryRef({
+    const memoryRef = await services.store.appendMemoryRef({
       leadId: body.leadId,
       memoryId: result.memoryRef ?? "",
       kind: "customer_reply",
       summary: body.customerMessage.slice(0, 100),
       sourceArtifactBlobId: result.artifact?.blobId,
     });
-    const artifactRef = services.store.appendArtifactRef({
+    const artifactRef = await services.store.appendArtifactRef({
       leadId: body.leadId,
       artifactType: result.artifact?.type ?? "conversion_decision",
       blobId: result.artifact?.blobId ?? "",
     });
-    // artifactRefs 存 Walrus blobId（外部寻址），memoryRefs 存 store 内部 id（本地追踪）
-    services.store.appendTimelineEvent({
+    await services.store.appendTimelineEvent({
       leadId: body.leadId,
       type: "conversion_decision_made",
       summary: `生成跟进消息：${result.message?.slice(0, 50) ?? ""}`,
@@ -163,13 +285,13 @@ export function workflowsRoute(services: ApiServices) {
     });
 
     // conversion 仅更新 lead 状态，不覆盖 discovery 阶段的 campaignId 和 displayName
-    const existingLead = services.store.getLead(body.leadId);
+    const existingLead = await services.store.getLead(body.leadId);
     if (existingLead) {
-      services.store.upsertLead({ ...existingLead, status: "nurturing" });
+      await services.store.upsertLead({ ...existingLead, status: "nurturing" });
     }
 
     // 持久化 Agent 生成的下一步话术，供 Dashboard 的「下一步最佳跟进」面板展示
-    services.store.upsertNextFollowup({
+    await services.store.upsertNextFollowup({
       leadId: body.leadId,
       message: result.message ?? "",
       usedMemoryRefs: [memoryRef.id],
@@ -177,7 +299,7 @@ export function workflowsRoute(services: ApiServices) {
     });
     // conversion 也可能抽取到新的画像字段，合并进已有 profile
     if (Object.keys(result.extractedFields).length > 0) {
-      services.store.upsertProfile({
+      await services.store.upsertProfile({
         leadId: body.leadId,
         summary: existingLead?.summary ?? "",
         needs: [],
@@ -193,13 +315,13 @@ export function workflowsRoute(services: ApiServices) {
     const body = HandoffBodySchema.parse(await c.req.json());
     const result = await services.workflows.runHandoffRecovery(body);
 
-    const artifactRef = services.store.appendArtifactRef({
+    const artifactRef = await services.store.appendArtifactRef({
       leadId: body.leadId,
       artifactType: "handoff_proof",
       blobId: result.artifact?.blobId ?? "",
     });
     // handoff 不变更 lead 状态，仅记录移交事件
-    services.store.appendTimelineEvent({
+    await services.store.appendTimelineEvent({
       leadId: body.leadId,
       type: "handoff_recovered",
       summary: result.recoverySummary ?? "Handoff completed",

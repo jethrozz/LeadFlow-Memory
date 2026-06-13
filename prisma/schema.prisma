@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum CampaignStatus {
@@ -67,17 +68,23 @@ enum DeviceStatus {
 
 model Campaign {
   id                 String         @id @default(cuid())
-  name               String
-  industry           String
+  name               String         @default("")
+  industry           String         @default("")
   city               String?
-  targetCustomer     String
+  targetCustomer     String         @default("")
   seedKeywords       String[]
-  targetCreators     Json
+  targetCreators     Json           @default("[]")
   sourceModes        String[]
-  maxPostsPerRun     Int
-  maxCommentsPerPost Int
-  playbookId         String
+  maxPostsPerRun     Int            @default(10)
+  maxCommentsPerPost Int            @default(5)
+  // 目标制：每次调度运行以采集到 targetLeadCount 条合格线索为目标（不设时间上限）。
+  targetLeadCount    Int            @default(10)
+  // 后台定时调度：scheduleEnabled 开启后，每天在 scheduleTimes 指定的本地时间各跑一次。
+  scheduleEnabled    Boolean        @default(false)
+  scheduleTimes      String[]       @default(["09:00", "14:00", "20:00"])
+  playbookId         String         @default("")
   status             CampaignStatus @default(draft)
+  metadata           Json?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   leads              Lead[]
@@ -105,20 +112,23 @@ model Lead {
   id             String          @id @default(cuid())
   campaignId     String
   socialSourceId String?
-  playbookId     String
+  playbookId     String         @default("")
   platform       String
-  sourceType     String
-  status         LeadStatus      @default(discovered)
-  intentLevel    IntentLevel
+  sourceType     String         @default("")
+  status         LeadStatus     @default(discovered)
+  intentLevel    IntentLevel?
   sourceUrl      String?
   sourceAuthor   String?
-  memorySpaceId  String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  memorySpaceId  String         @default("")
+  displayName    String         @default("")
+  isDemoSeed     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   campaign       Campaign        @relation(fields: [campaignId], references: [id])
   socialSource   SocialSource?   @relation(fields: [socialSourceId], references: [id])
   profile        LeadProfile?
   conversation   Conversation?
+  nextFollowup   NextFollowup?
   workflowRuns   WorkflowRun[]
   memoryRefs     MemoryRef[]
   artifactRefs   ArtifactRef[]
@@ -126,17 +136,31 @@ model Lead {
   socialIdentity SocialIdentity?
 }
 
+model NextFollowup {
+  id                    String  @id @default(cuid())
+  leadId                String  @unique
+  message               String
+  usedMemoryRefs        String[]
+  worker                String?
+  nextBestAction        String?
+  requiresHumanApproval Boolean @default(false)
+  lead                  Lead    @relation(fields: [leadId], references: [id])
+}
+
 model LeadProfile {
   id                    String      @id @default(cuid())
   leadId                String      @unique
-  industry              String
-  playbookId            String
-  summary               String
-  intentLevel           IntentLevel
-  profileCompleteness   Float
+  industry              String      @default("")
+  playbookId            String      @default("")
+  summary               String      @default("")
+  sourceNote            String?
+  intentLevel           IntentLevel?
+  profileCompleteness   Float       @default(0)
   missingRequiredFields String[]
-  common                Json
-  fields                Json
+  needs                 String[]
+  concerns              String[]
+  common                Json        @default("{}")
+  fields                Json        @default("{}")
   updatedAt             DateTime    @updatedAt
   lead                  Lead        @relation(fields: [leadId], references: [id])
 }
@@ -181,11 +205,11 @@ model WorkflowRun {
 model MemoryRef {
   id               String   @id @default(cuid())
   leadId           String
-  memorySpaceId    String
+  memorySpaceId    String   @default("")
   memoryId         String
   kind             String
   summary          String
-  confidence       Float
+  confidence       Float?
   sourceArtifactId String?
   createdAt        DateTime @default(now())
   lead             Lead     @relation(fields: [leadId], references: [id])
@@ -200,7 +224,7 @@ model ArtifactRef {
   suiObjectId    String?
   summary        String
   createdAt      DateTime     @default(now())
-  verifiedStatus String
+  verifiedStatus String     @default("pending")
   lead           Lead?        @relation(fields: [leadId], references: [id])
   workflowRun    WorkflowRun? @relation(fields: [workflowRunId], references: [id])
 }
@@ -225,6 +249,7 @@ model SocialIdentity {
   leadId         String   @unique
   platform       String
   externalUserId String
+  redId          String?
   username       String
   profileUrl     String?
   raw            Json?
