@@ -81,6 +81,14 @@ export type StoredNextFollowup = {
   requiresHumanApproval?: boolean;
 };
 
+export type StoredSocialIdentity = {
+  leadId: string;
+  platform: string;
+  externalUserId: string;
+  redId?: string;
+  username?: string;
+};
+
 // --- Async store interface ---
 
 export interface ApiStore {
@@ -131,6 +139,7 @@ export interface ApiStore {
     redId?: string;
     username?: string;
   }): Promise<void>;
+  getSocialIdentity(leadId: string): Promise<StoredSocialIdentity | undefined>;
 
   // Workflow runs
   createWorkflowRun(input: {
@@ -157,6 +166,7 @@ export function createMemoryStore(): ApiStore {
   const conversations = new Map<string, StoredConversationMessage[]>();
   const profiles = new Map<string, StoredProfile>();
   const nextFollowups = new Map<string, StoredNextFollowup>();
+  const socialIdentities = new Map<string, StoredSocialIdentity>();
   const workflowRuns: Array<{
     id: string;
     type: string;
@@ -250,7 +260,16 @@ export function createMemoryStore(): ApiStore {
     getNextFollowup: async (leadId) => nextFollowups.get(leadId),
 
     // Social identity
-    upsertSocialIdentity: async () => {},
+    upsertSocialIdentity: async (input) => {
+      socialIdentities.set(input.leadId, {
+        leadId: input.leadId,
+        platform: input.platform,
+        externalUserId: input.externalUserId,
+        redId: input.redId,
+        username: input.username,
+      });
+    },
+    getSocialIdentity: async (leadId) => socialIdentities.get(leadId),
 
     // Workflow runs
     createWorkflowRun: async (input) => {

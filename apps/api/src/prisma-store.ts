@@ -364,6 +364,18 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
       });
     },
 
+    async getSocialIdentity(leadId) {
+      const row = await prisma.socialIdentity.findUnique({ where: { leadId } });
+      if (!row) return undefined;
+      return {
+        leadId: row.leadId,
+        platform: row.platform,
+        externalUserId: row.externalUserId,
+        redId: row.redId ?? undefined,
+        username: row.username || undefined,
+      };
+    },
+
     // ── Workflow runs ──────────────────────────────────────────────
 
     async createWorkflowRun(input) {
