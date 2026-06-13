@@ -26,5 +26,21 @@ export function devicesRoute(services: ApiServices) {
     }),
   );
 
+  route.get("/xhs-web/login-status", async (c) => {
+    try {
+      const status = await services.xhsDiscovery.checkLoginStatus();
+      return c.json(status);
+    } catch (err) {
+      const error = err as Error & { code?: string };
+      if (error.code === "XHS_DISCOVERY_LOGIN_REQUIRED") {
+        return c.json(
+          { loggedIn: false, error: "请启动 xiaohongshu-mcp 并完成扫码登录", code: "XHS_DISCOVERY_LOGIN_REQUIRED" },
+          409,
+        );
+      }
+      throw err;
+    }
+  });
+
   return route;
 }

@@ -3,6 +3,9 @@ import {
   createXhsChatClientFromEnv,
   FakeXhsChatClient,
   type XhsChatClient,
+  createXhsDiscoveryClientFromEnv,
+  FakeXhsDiscoveryClient,
+  type XhsDiscoveryClient,
 } from "@leadflow/connectors";
 import { createLlmProviderFromEnv, FakeLlmProvider, type LlmProvider } from "@leadflow/llm";
 import { Hono } from "hono";
@@ -32,6 +35,7 @@ export type ApiServices = {
   memwal: MemWalClient;
   walrus: WalrusArtifactClient;
   xhsChat: XhsChatClient;
+  xhsDiscovery: XhsDiscoveryClient;
   workflows: ReturnType<typeof createWorkflowService>;
   store: ApiStore;
 };
@@ -50,12 +54,14 @@ export function createFakeServices(): ApiServices {
   const memwal = new FakeMemWalClient();
   const walrus = new FakeWalrusArtifactClient();
   const xhsChat = new FakeXhsChatClient();
+  const xhsDiscovery = new FakeXhsDiscoveryClient();
   return {
     llm,
     memwal,
     walrus,
     xhsChat,
-    workflows: createWorkflowService({ llm, memwal, walrus }),
+    xhsDiscovery,
+    workflows: createWorkflowService({ llm, memwal, walrus, xhsDiscovery }),
     store: createStore(),
   };
 }
@@ -65,12 +71,14 @@ export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Api
   const memwal = createMemWalClientFromEnv(env);
   const walrus = createWalrusClientFromEnv(env);
   const xhsChat = createXhsChatClientFromEnv(env);
+  const xhsDiscovery = createXhsDiscoveryClientFromEnv(env);
   return {
     llm,
     memwal,
     walrus,
     xhsChat,
-    workflows: createWorkflowService({ llm, memwal, walrus }),
+    xhsDiscovery,
+    workflows: createWorkflowService({ llm, memwal, walrus, xhsDiscovery }),
     store: createStore(),
   };
 }

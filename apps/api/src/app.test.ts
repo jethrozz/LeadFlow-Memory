@@ -140,6 +140,13 @@ describe("api app", () => {
     expect((json as { status: string }).status).toBe("sent");
   });
 
+  it("returns xhs-web login status through xhs-discovery connector", async () => {
+    const response = await app.request("/api/devices/xhs-web/login-status");
+    expect(response.status).toBe(200);
+    const json = await response.json() as { loggedIn: boolean };
+    expect(json.loggedIn).toBe(true);
+  });
+
   it("dashboard reflects workflow outputs instead of fixtures", async () => {
     await app.request("/api/workflows/discovery/run", {
       method: "POST",
