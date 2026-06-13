@@ -11,6 +11,7 @@ function toLeadListItem(lead: StoredLead) {
     intentLevel: lead.intentLevel,
     summary: lead.summary,
     updatedAt: lead.updatedAt,
+    isDemoSeed: lead.isDemoSeed ?? false,
   };
 }
 
