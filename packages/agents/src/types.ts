@@ -1,9 +1,11 @@
 import type { StoredWalrusArtifact } from "@leadflow/walrus";
+import type { XhsDiscoveryClient } from "@leadflow/connectors";
 
 export type WorkflowServices = {
   llm: import("@leadflow/llm").LlmProvider;
   memwal: import("@leadflow/memwal").MemWalClient;
   walrus: import("@leadflow/walrus").WalrusArtifactClient;
+  xhsDiscovery?: XhsDiscoveryClient;
 };
 
 export type DiscoveryInput = {
@@ -42,4 +44,21 @@ export type HandoffRecoveryInput = {
 export type HandoffRecoveryResult = {
   recoverySummary: string;
   artifact: StoredWalrusArtifact;
+};
+
+export type CampaignDiscoveryInput = {
+  campaignId: string;
+  seedKeywords: string[];
+  maxPostsPerRun?: number;
+  maxCommentsPerPost?: number;
+  delayMs?: number;
+};
+
+export type CampaignDiscoveryResult = {
+  campaignId: string;
+  searched: number;
+  relevant: number;
+  leadsCreated: number;
+  skipped: number;
+  artifacts: string[];
 };
