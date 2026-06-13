@@ -36,5 +36,6 @@ export async function runDiscoveryWorkflow(
     summary: String(analysis.summary ?? memoryText),
     memoryRef: memory.id,
     artifact,
+    extractedFields: (analysis.extractedFields ?? {}) as Record<string, unknown>,
   };
 }

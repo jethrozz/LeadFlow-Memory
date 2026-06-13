@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { ApiServices } from "../app.js";
-import type { StoredLead } from "../store.js";
+import type { StoredLead, StoredProfile } from "../store.js";
 
-function toLeadListItem(lead: StoredLead) {
+function toLeadListItem(lead: StoredLead, profile: StoredProfile | undefined) {
   return {
     id: lead.id,
     displayName: lead.displayName,
@@ -12,6 +12,9 @@ function toLeadListItem(lead: StoredLead) {
     summary: lead.summary,
     updatedAt: lead.updatedAt,
     isDemoSeed: lead.isDemoSeed ?? false,
+    // 侧边栏线索卡片展示区域与前两个需求标签
+    district: profile?.fields.district?.value,
+    needs: profile?.needs ?? [],
   };
 }
 
@@ -19,8 +22,9 @@ export function dashboardRoutes(services: ApiServices) {
   const route = new Hono();
 
   route.get("/leads", (c) => {
-    const leads = services.store.listLeads();
-    const items = leads.map(toLeadListItem);
+    const items = services.store
+      .listLeads()
+      .map((lead) => toLeadListItem(lead, services.store.getProfile(lead.id)));
     return c.json({ items });
   });
 
@@ -33,12 +37,21 @@ export function dashboardRoutes(services: ApiServices) {
         404,
       );
     }
+    const profile = services.store.getProfile(leadId);
     return c.json({
-      lead,
+      lead: toLeadListItem(lead, profile),
+      profile: {
+        summary: profile?.summary ?? lead.summary ?? "",
+        sourceNote: profile?.sourceNote,
+        needs: profile?.needs ?? [],
+        concerns: profile?.concerns ?? [],
+        fields: profile?.fields ?? {},
+      },
       conversation: { messages: services.store.listConversationMessages(leadId) },
       timeline: services.store.listTimelineEvents(leadId),
       memories: services.store.listMemoryRefs(leadId),
       artifacts: services.store.listArtifactRefs(leadId),
+      nextFollowup: services.store.getNextFollowup(leadId) ?? null,
     });
   });
 

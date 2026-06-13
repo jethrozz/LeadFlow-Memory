@@ -9,6 +9,7 @@ import {
 } from "@leadflow/connectors";
 import { createLlmProviderFromEnv, FakeLlmProvider, type LlmProvider } from "@leadflow/llm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import {
   createMemWalClientFromEnv,
   FakeMemWalClient,
@@ -86,6 +87,7 @@ export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Api
 export function createApp(services: ApiServices) {
   const app = new Hono();
 
+  app.use("*", cors({ origin: "*" }));
   app.get("/health", (c) => c.json({ ok: true }));
   app.route("/api/artifacts", artifactsRoute(services));
   app.route("/api/campaigns", campaignsRoutes(services));

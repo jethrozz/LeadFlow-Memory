@@ -19,6 +19,7 @@ export type DiscoveryResult = {
   summary: string;
   memoryRef: string;
   artifact: StoredWalrusArtifact;
+  extractedFields: Record<string, unknown>;
 };
 
 export type ConversionInput = {

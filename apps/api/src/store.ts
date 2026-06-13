@@ -55,6 +55,32 @@ export type StoredConversationMessage = {
   sentAt: string;
 };
 
+export type StoredProfileField = {
+  label: string;
+  value: string;
+  confidence?: number;
+};
+
+// Profile/nextFollowup live alongside the lead so the dashboard can render the
+// rich prototype view. Workflows write thin slices; the demo seed writes the full set.
+export type StoredProfile = {
+  leadId: string;
+  summary: string;
+  sourceNote?: string;
+  needs: string[];
+  concerns: string[];
+  fields: Record<string, StoredProfileField>;
+};
+
+export type StoredNextFollowup = {
+  leadId: string;
+  message: string;
+  usedMemoryRefs: string[];
+  worker?: string;
+  nextBestAction?: string;
+  requiresHumanApproval?: boolean;
+};
+
 export type ApiStore = ReturnType<typeof createStore>;
 
 export function createStore() {
@@ -64,6 +90,8 @@ export function createStore() {
   const artifactRefs = new Map<string, StoredArtifactRef[]>();
   const timelineEvents = new Map<string, StoredTimelineEvent[]>();
   const conversations = new Map<string, StoredConversationMessage[]>();
+  const profiles = new Map<string, StoredProfile>();
+  const nextFollowups = new Map<string, StoredNextFollowup>();
 
   const push = <T>(map: Map<string, T[]>, key: string, item: T): T => {
     const list = map.get(key) ?? [];
@@ -117,5 +145,28 @@ export function createStore() {
       return push(conversations, leadId, { ...input, id: `msg_${randomUUID()}` });
     },
     listConversationMessages: (leadId: string) => conversations.get(leadId) ?? [],
+
+    // upsertProfile merges fields/needs/concerns so discovery + conversion can each
+    // contribute a slice without clobbering the other's extracted data.
+    upsertProfile(input: StoredProfile): StoredProfile {
+      const existing = profiles.get(input.leadId);
+      const next: StoredProfile = {
+        leadId: input.leadId,
+        summary: input.summary || existing?.summary || "",
+        sourceNote: input.sourceNote ?? existing?.sourceNote,
+        needs: input.needs.length ? input.needs : existing?.needs ?? [],
+        concerns: input.concerns.length ? input.concerns : existing?.concerns ?? [],
+        fields: { ...(existing?.fields ?? {}), ...input.fields },
+      };
+      profiles.set(input.leadId, next);
+      return next;
+    },
+    getProfile: (leadId: string) => profiles.get(leadId),
+
+    upsertNextFollowup(input: StoredNextFollowup): StoredNextFollowup {
+      nextFollowups.set(input.leadId, input);
+      return input;
+    },
+    getNextFollowup: (leadId: string) => nextFollowups.get(leadId),
   };
 }

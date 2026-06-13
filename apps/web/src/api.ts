@@ -12,12 +12,18 @@ async function requestJson<T>(path: string): Promise<T> {
 }
 
 export async function fetchDashboardLeads(): Promise<DashboardLeadItem[]> {
-  const json = await requestJson<{ leads: DashboardLeadItem[] }>("/api/dashboard/leads");
-  return json.leads;
+  const json = await requestJson<{ items: DashboardLeadItem[] }>("/api/dashboard/leads");
+  return json.items;
 }
 
 export async function fetchDashboardLeadDetail(leadId: string): Promise<DashboardLeadDetail> {
   return requestJson<DashboardLeadDetail>(`/api/dashboard/leads/${leadId}`);
+}
+
+export async function seedDemo(): Promise<{ seeded: boolean; leadId: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/demo/seed-real-estate`, { method: "POST" });
+  if (!response.ok) throw new Error(`Seed failed: ${response.status}`);
+  return response.json();
 }
 
 export async function syncConversation(leadId: string) {

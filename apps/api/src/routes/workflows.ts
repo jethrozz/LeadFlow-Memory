@@ -1,6 +1,26 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { ApiServices } from "../app.js";
+import type { StoredProfileField } from "../store.js";
+
+// 中文标签映射：用于把 LLM 抽取的英文字段键渲染成画像面板里的标签。
+const FIELD_LABELS: Record<string, string> = {
+  budget: "预算",
+  district: "区域",
+  layout: "户型",
+  property_market: "市场类型",
+  property_condition: "房屋状况",
+  viewing_time: "看房时间",
+};
+
+function toProfileFields(extracted: Record<string, unknown>): Record<string, StoredProfileField> {
+  const fields: Record<string, StoredProfileField> = {};
+  for (const [key, value] of Object.entries(extracted)) {
+    if (value == null || value === "") continue;
+    fields[key] = { label: FIELD_LABELS[key] ?? key, value: String(value) };
+  }
+  return fields;
+}
 
 const CampaignDiscoveryBodySchema = z.object({
   campaignId: z.string(),
@@ -79,6 +99,18 @@ export function workflowsRoute(services: ApiServices) {
       summary: result.summary,
       intentLevel: result.intentLevel,
     });
+    const discoveryFields = toProfileFields(result.extractedFields);
+    services.store.upsertProfile({
+      leadId: singleBody.leadId,
+      summary: result.summary ?? "",
+      sourceNote: singleBody.sourceText,
+      // needs：取 budget 以外的抽取字段值作为标签（户型、区域等）
+      needs: Object.entries(result.extractedFields)
+        .filter(([key, value]) => key !== "budget" && value != null && value !== "")
+        .map(([, value]) => String(value)),
+      concerns: [],
+      fields: discoveryFields,
+    });
     const memoryRef = services.store.appendMemoryRef({
       leadId: singleBody.leadId,
       memoryId: result.memoryRef ?? "",
@@ -134,6 +166,24 @@ export function workflowsRoute(services: ApiServices) {
     const existingLead = services.store.getLead(body.leadId);
     if (existingLead) {
       services.store.upsertLead({ ...existingLead, status: "nurturing" });
+    }
+
+    // 持久化 Agent 生成的下一步话术，供 Dashboard 的「下一步最佳跟进」面板展示
+    services.store.upsertNextFollowup({
+      leadId: body.leadId,
+      message: result.message ?? "",
+      usedMemoryRefs: [memoryRef.id],
+      requiresHumanApproval: true,
+    });
+    // conversion 也可能抽取到新的画像字段，合并进已有 profile
+    if (Object.keys(result.extractedFields).length > 0) {
+      services.store.upsertProfile({
+        leadId: body.leadId,
+        summary: existingLead?.summary ?? "",
+        needs: [],
+        concerns: [],
+        fields: toProfileFields(result.extractedFields),
+      });
     }
 
     return c.json(result);
