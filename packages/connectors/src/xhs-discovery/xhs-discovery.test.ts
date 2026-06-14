@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FakeXhsDiscoveryClient } from "../index.js";
-import { mapFeedsToPosts, mapLoginStatus } from "./mcp-client.js";
+import { mapFeedsToPosts, mapLoginStatus, mapUserProfile } from "./mcp-client.js";
 
 describe("XHS discovery connector", () => {
   it("searches posts by keyword", async () => {
@@ -58,5 +58,26 @@ describe("XHS discovery connector", () => {
     expect(posts[0]?.authorName).toBe("陈薇");
     expect(posts[0]?.title).toBe("渝北三房推荐");
     expect(posts[0]?.stats?.likes).toBe(88);
+  });
+
+  it("mapUserProfile reads redId/nickname from userBasicInfo", () => {
+    // 真实 user_profile 返回：基础信息在 userBasicInfo（不是 basicInfo）
+    const raw = {
+      userBasicInfo: {
+        gender: 0,
+        ipLocation: "重庆",
+        desc: "一个重庆做房产经纪人的小哥",
+        nickname: "峰峰看房｜麦予禾",
+        redId: "63003915117",
+        images: "https://sns-avatar-qc.xhscdn.com/avatar/abc?w/360",
+      },
+      interactions: [],
+      feeds: [],
+    };
+    const profile = mapUserProfile(raw);
+    expect(profile.redId).toBe("63003915117");
+    expect(profile.nickname).toBe("峰峰看房｜麦予禾");
+    expect(profile.ipLocation).toBe("重庆");
+    expect(profile.gender).toBe("0");
   });
 });

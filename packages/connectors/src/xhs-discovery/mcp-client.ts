@@ -3,6 +3,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type {
   GetPostWithCommentsInput,
   SearchPostsInput,
+  UserProfile,
   XhsDiscoveryClient,
   XhsDiscoveryComment,
   XhsDiscoveryPost,
@@ -52,6 +53,8 @@ export function mapFeedsToPosts(raw: unknown): XhsDiscoveryPost[] {
     externalId: feed.id,
     url: `https://www.xiaohongshu.com/explore/${feed.id}?xsec_token=${feed.xsecToken}`,
     authorName: feed.noteCard?.user?.nickname,
+    authorUserId: feed.noteCard?.user?.userId,
+    xsecToken: feed.xsecToken,
     title: feed.noteCard?.displayTitle,
     content: feed.noteCard?.displayTitle ?? "",
     images: feed.noteCard?.cover?.url ? [feed.noteCard.cover.url] : [],
@@ -85,7 +88,8 @@ type RawFeedDetail = {
     interactInfo?: { likedCount?: string; commentCount?: string; sharedCount?: string };
     imageList?: Array<{ url?: string }>;
   };
-  comments?: RawComment[];
+  // 真实服务返回 comments 为 { list, cursor, hasMore }；兼容直接数组形式。
+  comments?: RawComment[] | { list?: RawComment[]; cursor?: string; hasMore?: boolean };
 };
 
 export function mapFeedDetail(
@@ -93,8 +97,9 @@ export function mapFeedDetail(
   externalId: string,
   maxComments?: number,
 ): { post: XhsDiscoveryPost; comments: XhsDiscoveryComment[] } {
-  const data = raw as RawFeedDetail;
-  const note = data?.note ?? {};
+  // get_feed_detail 实际返回 { feed_id, data: { note, comments } }；兼容未包裹形式。
+  const root = ((raw as { data?: RawFeedDetail })?.data ?? raw) as RawFeedDetail;
+  const note = root?.note ?? {};
   const now = new Date().toISOString();
   const noteId = note.noteId ?? externalId;
 
@@ -103,6 +108,8 @@ export function mapFeedDetail(
     externalId: noteId,
     url: `https://www.xiaohongshu.com/explore/${noteId}`,
     authorName: note.user?.nickname,
+    authorUserId: note.user?.userId,
+    xsecToken: note.xsecToken ?? root?.note?.xsecToken,
     title: note.title,
     content: note.desc ?? note.title ?? "",
     images: (note.imageList ?? []).map((img) => img.url ?? "").filter(Boolean),
@@ -116,12 +123,16 @@ export function mapFeedDetail(
     raw: note,
   };
 
-  const rawComments = (data?.comments ?? []).slice(0, maxComments ?? 20);
+  const commentList = Array.isArray(root?.comments)
+    ? root.comments
+    : (root?.comments?.list ?? []);
+  const rawComments = commentList.slice(0, maxComments ?? 20);
   const comments: XhsDiscoveryComment[] = rawComments.map((c) => ({
     platform: "xhs",
     externalId: c.id,
     postExternalId: c.noteId ?? noteId,
     authorName: c.userInfo?.nickname,
+    authorUserId: c.userInfo?.userId,
     content: c.content,
     likeCount: Number(c.likeCount ?? 0) || undefined,
     publishedAt: c.createTime ? new Date(c.createTime).toISOString() : undefined,
@@ -130,6 +141,31 @@ export function mapFeedDetail(
   }));
 
   return { post, comments };
+}
+
+type RawUserProfile = {
+  // 真实 user_profile 返回的基础信息在 userBasicInfo 下（gender 为数字）。
+  userBasicInfo?: {
+    nickname?: string;
+    redId?: string;
+    gender?: number | string;
+    desc?: string;
+    ipLocation?: string;
+    images?: string;
+    imageb?: string;
+  };
+};
+
+export function mapUserProfile(raw: unknown): UserProfile {
+  const info = (raw as RawUserProfile)?.userBasicInfo ?? {};
+  return {
+    nickname: info.nickname,
+    redId: info.redId,
+    gender: info.gender == null ? undefined : String(info.gender),
+    desc: info.desc,
+    ipLocation: info.ipLocation,
+    avatar: info.images ?? info.imageb,
+  };
 }
 
 // --- Client ---
@@ -202,11 +238,20 @@ export class XhsDiscoveryMcpClient implements XhsDiscoveryClient {
       new URL(url.startsWith("http") ? url : `https://x.com${url}`).searchParams.get(
         "xsec_token",
       ) ?? "";
+    // get_feed_detail 仅接受 feed_id + xsec_token（schema additionalProperties:false）；
+    // 评论数量在 mapFeedDetail 里客户端切片。
     const result = await this.callToolJson<unknown>("get_feed_detail", {
       feed_id: input.externalId,
       xsec_token: xsecToken,
-      max_comment_items: input.maxComments ?? 20,
     });
     return mapFeedDetail(result, input.externalId, input.maxComments);
+  }
+
+  async getUserProfile(input: { userId: string; xsecToken: string }): Promise<UserProfile> {
+    const raw = await this.callToolJson<unknown>("user_profile", {
+      user_id: input.userId,
+      xsec_token: input.xsecToken,
+    });
+    return mapUserProfile(raw);
   }
 }
