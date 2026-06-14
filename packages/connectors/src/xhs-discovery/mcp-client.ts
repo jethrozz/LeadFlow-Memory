@@ -11,7 +11,15 @@ import type {
 
 type XhsDiscoveryMcpClientOptions = {
   baseUrl: string;
+  /** 单次 MCP 工具调用超时（毫秒）。user_profile 等抓取类调用很慢，默认 120s。 */
+  callTimeoutMs?: number;
+  /** 传输/超时类失败的最大重试次数（不含首次）。默认 2。 */
+  maxRetries?: number;
 };
+
+const DEFAULT_CALL_TIMEOUT_MS = 120_000;
+const DEFAULT_MAX_RETRIES = 2;
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 // --- Mappers（字段名严格按 xiaohongshu-mcp-tool-contracts.md）---
 
@@ -194,7 +202,26 @@ export class XhsDiscoveryMcpClient implements XhsDiscoveryClient {
 
   private async callToolText(tool: string, args: Record<string, unknown>): Promise<string> {
     const client = await this.getClient();
-    const result = await client.callTool({ name: tool, arguments: args });
+    const timeout = this.options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS;
+    const maxRetries = this.options.maxRetries ?? DEFAULT_MAX_RETRIES;
+
+    // 仅对传输层/超时失败重试（MCP 抓取任务耗时长，偶发超时常见）；
+    // 工具自身返回的 isError 在循环外处理一次，不重试。
+    let result: Awaited<ReturnType<typeof client.callTool>> | undefined;
+    let lastErr: unknown;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        result = await client.callTool({ name: tool, arguments: args }, undefined, { timeout });
+        lastErr = undefined;
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < maxRetries) await sleep(1000 * (attempt + 1));
+      }
+    }
+    if (lastErr) throw lastErr;
+    if (!result) throw new Error(`xiaohongshu-mcp ${tool} returned no result`);
+
     if (result.isError) {
       const errText = JSON.stringify(result.content);
       if (errText.includes("login") || errText.includes("登录") || errText.includes("未登录")) {
