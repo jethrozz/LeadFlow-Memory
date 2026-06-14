@@ -1,18 +1,22 @@
 import { createArtifactPayload } from "@leadflow/walrus";
-import { discoverySystemPrompt } from "./prompts.js";
+import { buildDiscoveryPrompt } from "./prompts.js";
+import { safeWalrusStore } from "./walrus-utils.js";
 import type { DiscoveryInput, DiscoveryResult, WorkflowServices } from "./types.js";
 
 export async function runDiscoveryWorkflow(
   services: WorkflowServices,
   input: DiscoveryInput,
 ): Promise<DiscoveryResult> {
+  const systemPrompt = buildDiscoveryPrompt(input.playbook?.profile_fields);
+
   const analysis = await services.llm.chatJson({
-    system: discoverySystemPrompt,
+    system: systemPrompt,
     messages: [{ role: "user", content: input.sourceText }],
   });
 
   const memoryText = String(analysis.memory ?? analysis.summary ?? input.sourceText);
-  const artifact = await services.walrus.store(
+  const artifact = await safeWalrusStore(
+    services.walrus,
     createArtifactPayload({
       leadId: input.leadId,
       type: "lead_discovery_report",
@@ -37,5 +41,7 @@ export async function runDiscoveryWorkflow(
     memoryRef: memory.id,
     artifact,
     extractedFields: (analysis.extractedFields ?? {}) as Record<string, unknown>,
+    needs: Array.isArray(analysis.needs) ? analysis.needs.map(String) : [],
+    concerns: Array.isArray(analysis.concerns) ? analysis.concerns.map(String) : [],
   };
 }

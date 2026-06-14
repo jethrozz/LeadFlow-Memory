@@ -63,6 +63,35 @@ describe("campaign discovery workflow", () => {
     expect(commentLead?.authorRedId).toBe("red_observer_003");
   });
 
+  it("still produces leads with identity when Walrus store fails", async () => {
+    const services = makeServices();
+    // 模拟 Walrus 写入端不可用（如 DNS 解析失败 / publisher 宕机）
+    services.walrus = {
+      store: async () => {
+        throw new Error("walrus down");
+      },
+      read: async () => {
+        throw new Error("walrus down");
+      },
+    };
+
+    const result = await runCampaignDiscoveryWorkflow(services, {
+      campaignId: "campaign_test",
+      seedKeywords: ["渝北三房"],
+      maxPostsPerRun: 2,
+      maxCommentsPerPost: 5,
+      delayMs: 0,
+    });
+
+    // Walrus 挂了也不能中止整轮：线索仍要产出，身份仍要捕获
+    expect(result.leadsCreated).toBeGreaterThan(0);
+    const postLead = result.leads.find((l) => l.sourceType === "post");
+    expect(postLead?.authorUserId).toBe("xhs_user_001");
+    expect(postLead?.authorRedId).toBe("red_chongqing_001");
+    // artifact blobId 为空（存储失败的占位），但不影响线索本体
+    expect(postLead?.sourceArtifactBlobId).toBe("");
+  });
+
   it("throws if xhsDiscovery is not provided", async () => {
     const services: WorkflowServices = {
       llm: new FakeLlmProvider({ content: "{}" }),

@@ -1,5 +1,6 @@
 import { createArtifactPayload } from "@leadflow/walrus";
 import { runDiscoveryWorkflow } from "./discovery-workflow.js";
+import { safeWalrusStore } from "./walrus-utils.js";
 import type {
   CampaignDiscoveryInput,
   CampaignDiscoveryResult,
@@ -114,7 +115,8 @@ export async function runCampaignDiscoveryWorkflow(
     await delay(delayMs);
 
     // Step 4: 存储 source_snapshot artifact
-    const snapshotArtifact = await services.walrus.store(
+    const snapshotArtifact = await safeWalrusStore(
+      services.walrus,
       createArtifactPayload({
         leadId: post.externalId,
         type: "source_snapshot",
@@ -186,7 +188,8 @@ export async function runCampaignDiscoveryWorkflow(
       const commentLeadId = `lead_xhs_comment_${comment.externalId}`;
       const commentMemorySpaceId = `space_${commentLeadId}`;
 
-      const commentSnapshotArtifact = await services.walrus.store(
+      const commentSnapshotArtifact = await safeWalrusStore(
+        services.walrus,
         createArtifactPayload({
           leadId: commentLeadId,
           type: "source_snapshot",
