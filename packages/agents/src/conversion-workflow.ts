@@ -39,7 +39,7 @@ export async function runConversionWorkflow(
 
   const systemPrompt = buildConversionPrompt(input.playbook, isOpening ? "opening" : "reply");
 
-  const result = await services.llm.chatJson({
+  const raw = await services.llm.chatJson({
     system: systemPrompt,
     messages: [
       {
@@ -50,21 +50,27 @@ export async function runConversionWorkflow(
         }),
       },
     ],
-  });
+  }) as {
+    message?: unknown;
+    memory?: unknown;
+    extractedFields?: unknown;
+    outcome?: unknown;
+  };
 
   const artifact = await safeWalrusStore(
     services.walrus,
     createArtifactPayload({
       leadId: input.leadId,
       type: "conversion_decision",
-      data: { customerMessage: input.customerMessage ?? null, recalled, result },
+      data: { customerMessage: input.customerMessage ?? null, recalled, result: raw },
     }),
   );
 
   const memory = await services.memwal.writeMemory({
     leadId: input.leadId,
     memorySpaceId: input.memorySpaceId,
-    content: String(result.memory ?? result.message ?? input.customerMessage ?? ""),
+    // fallback: if no memory fact, use reply text; if opening mode, use customer's words
+    content: String(raw.memory ?? raw.message ?? input.customerMessage ?? ""),
     metadata: {
       source: "conversion",
       confidence: 0.88,
@@ -73,10 +79,10 @@ export async function runConversionWorkflow(
   });
 
   return {
-    message: String(result.message ?? ""),
+    message: String(raw.message ?? ""),
     memoryRef: memory.id,
     artifact,
-    extractedFields: (result.extractedFields ?? {}) as Record<string, unknown>,
-    outcome: isOpening ? "continue" : parseOutcome(result.outcome),
+    extractedFields: (raw.extractedFields ?? {}) as Record<string, unknown>,
+    outcome: isOpening ? "continue" : parseOutcome(raw.outcome),
   };
 }
