@@ -55,6 +55,16 @@ export function leadsRoutes(services: ApiServices) {
     const leadId = `lead_mock_${randomUUID().slice(0, 8)}`;
     const memorySpaceId = `space_${leadId}`;
 
+    // 0. 确保兜底 campaign 存在（Lead.campaignId 是外键，mock 默认挂在 "manual" 下）
+    const existingCampaign = await services.store.getCampaign(body.campaignId);
+    if (!existingCampaign) {
+      await services.store.upsertCampaign({
+        id: body.campaignId,
+        name: body.campaignId === "manual" ? "手动测试" : body.campaignId,
+        status: "draft",
+      });
+    }
+
     // 1. 写入 lead
     await services.store.upsertLead({
       id: leadId,
