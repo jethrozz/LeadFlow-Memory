@@ -1,5 +1,6 @@
 import { createArtifactPayload } from "@leadflow/walrus";
-import { conversionSystemPrompt } from "./prompts.js";
+import { buildConversionPrompt } from "./prompts.js";
+import { safeWalrusStore } from "./walrus-utils.js";
 import type { ConversionInput, ConversionResult, WorkflowServices } from "./types.js";
 
 export async function runConversionWorkflow(
@@ -13,8 +14,10 @@ export async function runConversionWorkflow(
     limit: 5,
   });
 
+  const systemPrompt = buildConversionPrompt(input.playbook);
+
   const result = await services.llm.chatJson({
-    system: conversionSystemPrompt,
+    system: systemPrompt,
     messages: [
       {
         role: "user",
@@ -26,7 +29,8 @@ export async function runConversionWorkflow(
     ],
   });
 
-  const artifact = await services.walrus.store(
+  const artifact = await safeWalrusStore(
+    services.walrus,
     createArtifactPayload({
       leadId: input.leadId,
       type: "conversion_decision",
