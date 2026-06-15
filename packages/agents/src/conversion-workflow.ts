@@ -1,20 +1,43 @@
 import { createArtifactPayload } from "@leadflow/walrus";
 import { buildConversionPrompt } from "./prompts.js";
 import { safeWalrusStore } from "./walrus-utils.js";
-import type { ConversionInput, ConversionResult, WorkflowServices } from "./types.js";
+import type {
+  ConversionInput,
+  ConversionOutcome,
+  ConversionResult,
+  WorkflowServices,
+} from "./types.js";
+
+const OPENING_RECALL_QUERY = "客户购房需求 预算 区域 户型 顾虑";
+
+function parseOutcome(value: unknown): ConversionOutcome {
+  if (value === "goal_reached" || value === "rejected") return value;
+  return "continue";
+}
 
 export async function runConversionWorkflow(
   services: WorkflowServices,
   input: ConversionInput,
 ): Promise<ConversionResult> {
-  const recalled = await services.memwal.recall({
-    leadId: input.leadId,
-    memorySpaceId: input.memorySpaceId,
-    query: input.customerMessage,
-    limit: 5,
-  });
+  const isOpening = !input.customerMessage;
+  const recallQuery = input.customerMessage ?? OPENING_RECALL_QUERY;
 
-  const systemPrompt = buildConversionPrompt(input.playbook);
+  let recalled: Awaited<ReturnType<typeof services.memwal.recall>> = [];
+  try {
+    recalled = await services.memwal.recall({
+      leadId: input.leadId,
+      memorySpaceId: input.memorySpaceId,
+      query: recallQuery,
+      limit: 5,
+    });
+  } catch (err) {
+    console.warn(
+      "[conversion] recall failed, continuing without memory:",
+      err instanceof Error ? err.message : err,
+    );
+  }
+
+  const systemPrompt = buildConversionPrompt(input.playbook, isOpening ? "opening" : "reply");
 
   const result = await services.llm.chatJson({
     system: systemPrompt,
@@ -22,7 +45,7 @@ export async function runConversionWorkflow(
       {
         role: "user",
         content: JSON.stringify({
-          customerMessage: input.customerMessage,
+          customerMessage: input.customerMessage ?? "(首次主动触达，请生成开场白)",
           recalledMemory: recalled.map((memory) => memory.content),
         }),
       },
@@ -34,14 +57,14 @@ export async function runConversionWorkflow(
     createArtifactPayload({
       leadId: input.leadId,
       type: "conversion_decision",
-      data: { customerMessage: input.customerMessage, recalled, result },
+      data: { customerMessage: input.customerMessage ?? null, recalled, result },
     }),
   );
 
   const memory = await services.memwal.writeMemory({
     leadId: input.leadId,
     memorySpaceId: input.memorySpaceId,
-    content: String(result.memory ?? result.message ?? input.customerMessage),
+    content: String(result.memory ?? result.message ?? input.customerMessage ?? ""),
     metadata: {
       source: "conversion",
       confidence: 0.88,
@@ -54,5 +77,6 @@ export async function runConversionWorkflow(
     memoryRef: memory.id,
     artifact,
     extractedFields: (result.extractedFields ?? {}) as Record<string, unknown>,
+    outcome: isOpening ? "continue" : parseOutcome(result.outcome),
   };
 }
