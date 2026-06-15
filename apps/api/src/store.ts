@@ -230,13 +230,13 @@ export function createMemoryStore(): ApiStore {
     listActiveFollowupLeads: async (now, limit) =>
       [...leads.values()]
         .filter(
-          (l) =>
+          (l): l is StoredLead & { nextActionAt: Date } =>
             l.autoFollowupEnabled === true &&
             l.nextActionAt != null &&
             l.nextActionAt <= now &&
             (l.status === "discovered" || l.status === "contacting"),
         )
-        .sort((a, b) => a.nextActionAt!.getTime() - b.nextActionAt!.getTime())
+        .sort((a, b) => a.nextActionAt.getTime() - b.nextActionAt.getTime())
         .slice(0, limit),
 
     updateLeadFollowupState: async (leadId, patch) => {
