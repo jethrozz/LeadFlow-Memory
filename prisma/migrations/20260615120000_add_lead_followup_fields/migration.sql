@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Lead" ADD COLUMN "autoFollowupEnabled" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Lead" ADD COLUMN "nextActionAt" TIMESTAMP(3);
+ALTER TABLE "Lead" ADD COLUMN "followupTouchCount" INTEGER NOT NULL DEFAULT 0;

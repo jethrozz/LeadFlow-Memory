@@ -121,7 +121,10 @@ model Lead {
   sourceAuthor   String?
   memorySpaceId  String         @default("")
   displayName    String         @default("")
-  isDemoSeed     Boolean        @default(false)
+  isDemoSeed          Boolean        @default(false)
+  autoFollowupEnabled Boolean        @default(false)
+  nextActionAt        DateTime?
+  followupTouchCount  Int            @default(0)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   campaign       Campaign        @relation(fields: [campaignId], references: [id])

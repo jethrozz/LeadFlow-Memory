@@ -13,6 +13,9 @@ export type StoredLead = {
   summary?: string;
   updatedAt?: string;
   isDemoSeed?: boolean;
+  autoFollowupEnabled?: boolean;
+  nextActionAt?: Date | null;
+  followupTouchCount?: number;
 };
 
 export type StoredMemoryRef = {
@@ -89,6 +92,12 @@ export type StoredSocialIdentity = {
   username?: string;
 };
 
+export type StoredDevice = {
+  deviceId: string;
+  adbAddress: string;
+  status: string;
+};
+
 // --- Async store interface ---
 
 export interface ApiStore {
@@ -101,6 +110,12 @@ export interface ApiStore {
   upsertLead(lead: StoredLead): Promise<StoredLead>;
   getLead(leadId: string): Promise<StoredLead | undefined>;
   listLeads(): Promise<StoredLead[]>;
+  listActiveFollowupLeads(now: Date, limit: number): Promise<StoredLead[]>;
+  updateLeadFollowupState(
+    leadId: string,
+    patch: { status?: string; nextActionAt?: Date | null; followupTouchCount?: number; autoFollowupEnabled?: boolean },
+  ): Promise<void>;
+  getDefaultDevice(): Promise<StoredDevice | undefined>;
 
   // Memory refs
   appendMemoryRef(input: Omit<StoredMemoryRef, "id" | "createdAt">): Promise<StoredMemoryRef>;
@@ -197,12 +212,44 @@ export function createMemoryStore(): ApiStore {
 
     // Leads
     upsertLead: async (lead) => {
-      const next = { ...lead, updatedAt: new Date().toISOString() };
+      const existing = leads.get(lead.id);
+      const next: StoredLead = {
+        ...existing,
+        ...lead,
+        autoFollowupEnabled: lead.autoFollowupEnabled ?? existing?.autoFollowupEnabled ?? false,
+        nextActionAt: lead.nextActionAt !== undefined ? lead.nextActionAt : (existing?.nextActionAt ?? null),
+        followupTouchCount: lead.followupTouchCount ?? existing?.followupTouchCount ?? 0,
+        updatedAt: new Date().toISOString(),
+      };
       leads.set(lead.id, next);
       return next;
     },
     getLead: async (leadId) => leads.get(leadId),
     listLeads: async () => [...leads.values()],
+
+    listActiveFollowupLeads: async (now, limit) =>
+      [...leads.values()]
+        .filter(
+          (l) =>
+            l.autoFollowupEnabled === true &&
+            l.nextActionAt != null &&
+            l.nextActionAt <= now &&
+            (l.status === "discovered" || l.status === "contacting"),
+        )
+        .sort((a, b) => a.nextActionAt!.getTime() - b.nextActionAt!.getTime())
+        .slice(0, limit),
+
+    updateLeadFollowupState: async (leadId, patch) => {
+      const lead = leads.get(leadId);
+      if (!lead) return;
+      if (patch.status !== undefined) lead.status = patch.status;
+      if (patch.nextActionAt !== undefined) lead.nextActionAt = patch.nextActionAt;
+      if (patch.followupTouchCount !== undefined) lead.followupTouchCount = patch.followupTouchCount;
+      if (patch.autoFollowupEnabled !== undefined) lead.autoFollowupEnabled = patch.autoFollowupEnabled;
+      lead.updatedAt = new Date().toISOString();
+    },
+
+    getDefaultDevice: async () => undefined, // no device table in memory mode
 
     // Memory refs
     appendMemoryRef: async (input) =>

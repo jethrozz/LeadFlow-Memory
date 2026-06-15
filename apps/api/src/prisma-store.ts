@@ -4,6 +4,7 @@ import type {
   ApiStore,
   StoredArtifactRef,
   StoredConversationMessage,
+  StoredDevice,
   StoredLead,
   StoredMemoryRef,
   StoredNextFollowup,
@@ -66,6 +67,9 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           isDemoSeed: lead.isDemoSeed ?? false,
           intentLevel: lead.intentLevel as never ?? undefined,
           sourceType: "",
+          autoFollowupEnabled: lead.autoFollowupEnabled ?? false,
+          nextActionAt: lead.nextActionAt ?? null,
+          followupTouchCount: lead.followupTouchCount ?? 0,
         },
         update: {
           platform: lead.platform,
@@ -74,6 +78,9 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           displayName: lead.displayName ?? "",
           isDemoSeed: lead.isDemoSeed ?? false,
           intentLevel: lead.intentLevel as never ?? undefined,
+          ...(lead.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: lead.autoFollowupEnabled } : {}),
+          ...(lead.nextActionAt !== undefined ? { nextActionAt: lead.nextActionAt } : {}),
+          ...(lead.followupTouchCount !== undefined ? { followupTouchCount: lead.followupTouchCount } : {}),
         },
       });
       return leadFromPrisma(row);
@@ -87,6 +94,40 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
     async listLeads() {
       const rows = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } });
       return rows.map(leadFromPrisma);
+    },
+
+    async listActiveFollowupLeads(now, limit) {
+      const rows = await prisma.lead.findMany({
+        where: {
+          autoFollowupEnabled: true,
+          nextActionAt: { lte: now },
+          status: { in: ["discovered", "contacting"] as never },
+        },
+        orderBy: { nextActionAt: "asc" },
+        take: limit,
+      });
+      return rows.map(leadFromPrisma);
+    },
+
+    async updateLeadFollowupState(leadId, patch) {
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: {
+          ...(patch.status !== undefined ? { status: patch.status as never } : {}),
+          ...(patch.nextActionAt !== undefined ? { nextActionAt: patch.nextActionAt } : {}),
+          ...(patch.followupTouchCount !== undefined ? { followupTouchCount: patch.followupTouchCount } : {}),
+          ...(patch.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: patch.autoFollowupEnabled } : {}),
+        },
+      });
+    },
+
+    async getDefaultDevice(): Promise<StoredDevice | undefined> {
+      const row = await prisma.deviceConfig.findFirst({
+        where: { status: "connected" as never },
+        orderBy: { lastConnectedAt: "desc" },
+      });
+      if (!row) return undefined;
+      return { deviceId: row.deviceId, adbAddress: row.adbAddress, status: row.status };
     },
 
     // ── Memory refs ────────────────────────────────────────────────
@@ -438,8 +479,11 @@ function leadFromPrisma(row: Record<string, unknown>): StoredLead {
     memorySpaceId: (row.memorySpaceId as string) ?? "",
     displayName: (row.displayName as string) ?? "",
     intentLevel: (row.intentLevel as string) ?? undefined,
-    summary: undefined, // comes from profile
+    summary: undefined,
     updatedAt: row.updatedAt ? new Date(row.updatedAt as string | number | Date).toISOString() : undefined,
     isDemoSeed: (row.isDemoSeed as boolean) ?? false,
+    autoFollowupEnabled: (row.autoFollowupEnabled as boolean) ?? false,
+    nextActionAt: (row.nextActionAt as Date | null) ?? null,
+    followupTouchCount: (row.followupTouchCount as number) ?? 0,
   };
 }
