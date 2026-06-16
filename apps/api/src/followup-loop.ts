@@ -126,6 +126,9 @@ export async function processLead(
     xhsUserId,
     xhsUsername,
   });
+  console.log(
+    `[followup] lead ${lead.id} 查回复：newInbound=${newInboundCount} last=${lastInboundContent ?? "-"}`,
+  );
 
   if (!newInboundCount) {
     const decision = decideNextAction({

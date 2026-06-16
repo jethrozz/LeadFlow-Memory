@@ -45,16 +45,18 @@ export async function syncConversation(
     sinceTime,
   });
 
-  // 有 rawContent（真实 server）优先用 LLM 重解析；否则用 server best-effort messages（fake/回退）。
+  // 优先用 server 结构化 messages（aiQuery 抽取，可靠）；为空再退回 LLM 解析 rawContent。
   let messages: ParsedConversationMessage[];
-  if (fetched.rawContent && fetched.rawContent.trim()) {
-    messages = await parseRawConversation(services.llm, fetched.rawContent);
-  } else {
+  if (fetched.messages.length > 0) {
     messages = fetched.messages.map((m) => ({
       direction: m.direction,
       content: m.content,
       sentAt: m.sentAt,
     }));
+  } else if (fetched.rawContent && fetched.rawContent.trim()) {
+    messages = await parseRawConversation(services.llm, fetched.rawContent);
+  } else {
+    messages = [];
   }
 
   let newInboundCount = 0;

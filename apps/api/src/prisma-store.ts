@@ -266,18 +266,21 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           data: { leadId, platform: "xhs" },
         });
       }
+      // 防御：从真机抓取的消息时间可能缺失/非法（如空串），new Date 会得到 Invalid Date 让 Prisma 报错。
+      const parsedSentAt = new Date(input.sentAt);
+      const sentAt = Number.isNaN(parsedSentAt.getTime()) ? new Date() : parsedSentAt;
       const row = await prisma.conversationMessage.create({
         data: {
           conversationId: conversation.id,
           from: input.direction === "outbound" ? "agent" : "customer",
           content: input.content,
-          sentAt: new Date(input.sentAt),
+          sentAt,
         },
       });
       // Update lastMessageAt
       await prisma.conversation.update({
         where: { id: conversation.id },
-        data: { lastMessageAt: new Date(input.sentAt) },
+        data: { lastMessageAt: sentAt },
       });
       return {
         id: row.id,
