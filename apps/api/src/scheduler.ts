@@ -1,20 +1,5 @@
-import { resolve } from "node:path";
-import type { ConversionPlaybook } from "@leadflow/playbook";
 import type { ApiServices } from "./app.js";
-
-const PLAYBOOKS_DIR = resolve(import.meta.dirname, "../../../playbooks");
-
-async function loadPlaybookForCampaign(campaign: Record<string, unknown>): Promise<ConversionPlaybook | undefined> {
-  const playbookId = campaign.playbookId as string | undefined;
-  if (!playbookId) return undefined;
-  try {
-    const { loadPlaybookFromFile } = await import("@leadflow/playbook");
-    return await loadPlaybookFromFile(resolve(PLAYBOOKS_DIR, `${playbookId}.yml`));
-  } catch {
-    console.warn(`[scheduler] Playbook '${playbookId}' not found, using default prompt`);
-    return undefined;
-  }
-}
+import { loadPlaybookForCampaign } from "./playbook-loader.js";
 
 /**
  * 进程内定时调度器。
