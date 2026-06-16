@@ -66,26 +66,30 @@ export async function runConversionWorkflow(
     }),
   );
 
-  // 写记忆容错：MemWal 上游（embedding）偶发 429/不可用时不应阻断发送，降级为无 memoryRef。
+  // 只写 LLM 明确给出的"已确认事实"（raw.memory）。为空表示本轮无新事实——
+  // 不回退写 message/customerMessage，避免把我方话术或臆测写进长期记忆污染召回。
   let memoryRef = "";
-  try {
-    const memory = await services.memwal.writeMemory({
-      leadId: input.leadId,
-      memorySpaceId: input.memorySpaceId,
-      // fallback: if no memory fact, use reply text; if opening mode, use customer's words
-      content: String(raw.memory ?? raw.message ?? input.customerMessage ?? ""),
-      metadata: {
-        source: "conversion",
-        confidence: 0.88,
-        artifactRefs: [artifact.blobId],
-      },
-    });
-    memoryRef = memory.id;
-  } catch (err) {
-    console.warn(
-      "[conversion] writeMemory failed, continuing without memory ref:",
-      err instanceof Error ? err.message : err,
-    );
+  const memoryContent = typeof raw.memory === "string" ? raw.memory.trim() : "";
+  if (memoryContent) {
+    // 写记忆容错：MemWal 上游（embedding）偶发 429/不可用时不应阻断发送，降级为无 memoryRef。
+    try {
+      const memory = await services.memwal.writeMemory({
+        leadId: input.leadId,
+        memorySpaceId: input.memorySpaceId,
+        content: memoryContent,
+        metadata: {
+          source: "conversion",
+          confidence: 0.88,
+          artifactRefs: [artifact.blobId],
+        },
+      });
+      memoryRef = memory.id;
+    } catch (err) {
+      console.warn(
+        "[conversion] writeMemory failed, continuing without memory ref:",
+        err instanceof Error ? err.message : err,
+      );
+    }
   }
 
   return {

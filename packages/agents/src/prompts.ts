@@ -48,6 +48,9 @@ const BACKOFF_RULES = [
   "- 客户拒绝或回避加微信/留联系方式时，不要反复索要；先尊重，可改成「直接在小红书给您发」继续提供价值。",
   "- 客户明确说不需要/不感兴趣/别发了，就把 outcome 标为 rejected，不要继续纠缠。",
 ].join("\n");
+// memory 写入约束：只记已确认事实，杜绝臆测污染长期记忆。
+const MEMORY_RULE =
+  "memory 只记录客户本人实际说过或已确认的事实，严禁写入尚未发生、你推测或期望的内容（例如客户没答应就绝不能写「已同意看房」「已加微信」）；本轮没有新的客户事实时 memory 返回空字符串。";
 
 export function buildConversionPrompt(
   playbook?: ConversionPlaybook,
@@ -76,7 +79,9 @@ export function buildConversionPrompt(
       "",
       "这是首次主动触达客户，请基于已知客户画像写一句自然简短的开场白，不要假设客户说过的话。",
       "返回 JSON：{ message, memory, extractedFields }",
-      "message 为开场白，memory 为写入长期记忆的事实，extractedFields 为画像字段。",
+      "message 为开场白，extractedFields 为画像字段。",
+      // 开场是我方主动说的，客户还没回话，通常没有新事实——memory 一般应为空。
+      MEMORY_RULE,
     ].join("\n");
   }
 
@@ -98,7 +103,8 @@ export function buildConversionPrompt(
     "",
     "请判断当前对话状态并返回 JSON：{ message, memory, extractedFields, outcome }",
     'outcome 取值："goal_reached"（客户已满足上述目标）、"rejected"（客户明确拒绝/不感兴趣/明说不加微信不看房）、"continue"（仍在沟通中）。',
-    "message 为回复话术（务必简短），memory 为写入长期记忆的事实，extractedFields 为本次抽取的画像字段。",
+    "message 为回复话术（务必简短），extractedFields 为本次抽取的画像字段。",
+    MEMORY_RULE,
   ].join("\n");
 }
 
