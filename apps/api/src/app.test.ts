@@ -231,44 +231,30 @@ describe("api app", () => {
     ).toBe(true);
   });
 
-  it("start-followup 入列并立即跑一步（首触发开场 → contacting）", async () => {
-    const prev = process.env.AUTO_FOLLOWUP_DEVICE_ID;
-    process.env.AUTO_FOLLOWUP_DEVICE_ID = "test-device";
-    try {
-      const services = createFakeServices();
-      const flApp = createApp(services);
-      await services.store.upsertCampaign({ id: "c1" });
-      await services.store.upsertLead({
-        id: "lead_fl",
-        campaignId: "c1",
-        platform: "xhs",
-        status: "discovered",
-        memorySpaceId: "space_fl",
-        displayName: "jethrozz",
-      });
-      await services.store.upsertSocialIdentity({
-        leadId: "lead_fl",
-        platform: "xhs",
-        externalUserId: "jethrozz",
-        redId: "jethrozz",
-        username: "jethrozz",
-      });
+  it("start-followup 把线索入列交给自动循环", async () => {
+    const services = createFakeServices();
+    const flApp = createApp(services);
+    await services.store.upsertCampaign({ id: "c1" });
+    await services.store.upsertLead({
+      id: "lead_fl",
+      campaignId: "c1",
+      platform: "xhs",
+      status: "discovered",
+      memorySpaceId: "space_fl",
+      displayName: "jethrozz",
+    });
 
-      const res = await flApp.request("/api/leads/lead_fl/start-followup", { method: "POST" });
-      expect(res.status).toBe(200);
-      const body = (await res.json()) as {
-        result: { sent: boolean };
-        status: string;
-        followupTouchCount: number;
-        lastMessage: { direction: string } | null;
-      };
-      expect(body.result.sent).toBe(true);
-      expect(body.status).toBe("contacting");
-      expect(body.followupTouchCount).toBe(1);
-      expect(body.lastMessage?.direction).toBe("outbound");
-    } finally {
-      process.env.AUTO_FOLLOWUP_DEVICE_ID = prev;
-    }
+    const res = await flApp.request("/api/leads/lead_fl/start-followup", { method: "POST" });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { enqueued: boolean };
+    expect(body.enqueued).toBe(true);
+
+    const lead = await services.store.getLead("lead_fl");
+    expect(lead?.autoFollowupEnabled).toBe(true);
+    expect(lead?.nextActionAt).not.toBeNull();
+    // 入列即返回，不在请求内发送
+    const msgs = await services.store.listConversationMessages("lead_fl");
+    expect(msgs.length).toBe(0);
   });
 
   it("start-followup 对不存在的线索返回 404", async () => {
