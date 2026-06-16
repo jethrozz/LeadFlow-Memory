@@ -4,14 +4,14 @@ import { createXhsChatClientFromEnv, FakeXhsChatClient } from "../index.js";
 describe("XHS chat connector", () => {
   it("syncs conversation messages for a lead identity", async () => {
     const client = new FakeXhsChatClient();
-    const messages = await client.getConversation({
+    const result = await client.getConversation({
       deviceId: "device-1",
       xhsUserId: "xhs_001",
       xhsUsername: "重庆买房小陈",
       sinceTime: "2026-06-11T10:00:00.000Z",
     });
 
-    expect(messages[0]?.content).toContain("渝北");
+    expect(result.messages[0]?.content).toContain("渝北");
   });
 
   it("sends private messages", async () => {

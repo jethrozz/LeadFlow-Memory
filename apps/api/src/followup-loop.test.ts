@@ -86,7 +86,7 @@ describe("processLead", () => {
     };
     services.xhsChat = {
       ...services.xhsChat,
-      getConversation: async () => [reply],
+      getConversation: async () => ({ messages: [reply] }),
       sendPrivateMessage: async () => ({ status: "sent", remoteMessageId: "out_1", sentAt: new Date().toISOString() }),
     } as never;
 

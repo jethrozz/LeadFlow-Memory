@@ -6,6 +6,8 @@ export type XhsChatEnv = {
   XHS_CHAT_MODE?: string;
   XHS_CHAT_COMMAND?: string;
   XHS_CHAT_CWD?: string;
+  XHS_CHAT_TIMEOUT_MS?: string;
+  XHS_CHAT_MAX_RETRIES?: string;
 };
 
 export function createXhsChatClientFromEnv(env: XhsChatEnv = process.env): XhsChatClient {
@@ -23,5 +25,7 @@ export function createXhsChatClientFromEnv(env: XhsChatEnv = process.env): XhsCh
     command,
     args,
     cwd: env.XHS_CHAT_CWD,
+    callTimeoutMs: env.XHS_CHAT_TIMEOUT_MS ? Number(env.XHS_CHAT_TIMEOUT_MS) : undefined,
+    maxRetries: env.XHS_CHAT_MAX_RETRIES ? Number(env.XHS_CHAT_MAX_RETRIES) : undefined,
   });
 }

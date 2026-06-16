@@ -4,6 +4,7 @@ import type {
   XhsDeviceInput,
   XhsDeviceResult,
   XhsGetConversationInput,
+  XhsGetConversationResult,
   XhsSendPrivateMessageInput,
   XhsSendPrivateMessageResult,
 } from "./types.js";
@@ -29,16 +30,19 @@ export class FakeXhsChatClient implements XhsChatClient {
     };
   }
 
-  async getConversation(_input: XhsGetConversationInput): Promise<XhsConversationMessage[]> {
-    return [
-      {
-        id: "xhs_msg_001",
-        direction: "inbound",
-        content: "想看看渝北 130 万以内的三房，新房有没有补贴？",
-        sentAt: "2026-06-11T10:00:00.000Z",
-      },
-      ...this.outbound,
-    ];
+  async getConversation(_input: XhsGetConversationInput): Promise<XhsGetConversationResult> {
+    // fake 走 messages 回退路径（rawContent 留空），不触发调用方 LLM 解析。
+    return {
+      messages: [
+        {
+          id: "xhs_msg_001",
+          direction: "inbound",
+          content: "想看看渝北 130 万以内的三房，新房有没有补贴？",
+          sentAt: "2026-06-11T10:00:00.000Z",
+        },
+        ...this.outbound,
+      ],
+    };
   }
 
   async sendPrivateMessage(input: XhsSendPrivateMessageInput): Promise<XhsSendPrivateMessageResult> {

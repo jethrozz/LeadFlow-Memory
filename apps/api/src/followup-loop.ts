@@ -75,6 +75,8 @@ export async function processLead(
     await backoff();
     return { sent: false, skippedReason: "no_identity" };
   }
+  // 昵称给 mcp-xhs-chat 导航/匹配聊天页用；缺则回退线索 displayName。
+  const xhsUsername = identity?.username ?? lead.displayName;
 
   const deviceId = cfg.deviceId ?? (await services.store.getDefaultDevice())?.deviceId;
   if (!deviceId) {
@@ -102,7 +104,7 @@ export async function processLead(
       intervalMs: cfg.intervalMs,
       now,
     });
-    await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, message: conv.message });
+    await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, xhsUsername, message: conv.message });
     await services.store.updateLeadFollowupState(lead.id, {
       status: decision.nextStatus,
       nextActionAt: decision.nextActionAt,
@@ -116,6 +118,7 @@ export async function processLead(
     leadId: lead.id,
     deviceId,
     xhsUserId,
+    xhsUsername,
   });
 
   if (!newInboundCount) {
@@ -151,7 +154,7 @@ export async function processLead(
 
   let sent = false;
   if (decision.shouldSend) {
-    await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, message: conv.message });
+    await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, xhsUsername, message: conv.message });
     sent = true;
   }
   await services.store.updateLeadFollowupState(lead.id, {
