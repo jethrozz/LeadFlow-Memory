@@ -66,21 +66,31 @@ export async function runConversionWorkflow(
     }),
   );
 
-  const memory = await services.memwal.writeMemory({
-    leadId: input.leadId,
-    memorySpaceId: input.memorySpaceId,
-    // fallback: if no memory fact, use reply text; if opening mode, use customer's words
-    content: String(raw.memory ?? raw.message ?? input.customerMessage ?? ""),
-    metadata: {
-      source: "conversion",
-      confidence: 0.88,
-      artifactRefs: [artifact.blobId],
-    },
-  });
+  // 写记忆容错：MemWal 上游（embedding）偶发 429/不可用时不应阻断发送，降级为无 memoryRef。
+  let memoryRef = "";
+  try {
+    const memory = await services.memwal.writeMemory({
+      leadId: input.leadId,
+      memorySpaceId: input.memorySpaceId,
+      // fallback: if no memory fact, use reply text; if opening mode, use customer's words
+      content: String(raw.memory ?? raw.message ?? input.customerMessage ?? ""),
+      metadata: {
+        source: "conversion",
+        confidence: 0.88,
+        artifactRefs: [artifact.blobId],
+      },
+    });
+    memoryRef = memory.id;
+  } catch (err) {
+    console.warn(
+      "[conversion] writeMemory failed, continuing without memory ref:",
+      err instanceof Error ? err.message : err,
+    );
+  }
 
   return {
     message: String(raw.message ?? ""),
-    memoryRef: memory.id,
+    memoryRef,
     artifact,
     extractedFields: (raw.extractedFields ?? {}) as Record<string, unknown>,
     outcome: isOpening ? "continue" : parseOutcome(raw.outcome),
