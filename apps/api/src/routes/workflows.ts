@@ -159,6 +159,8 @@ export function workflowsRoute(services: ApiServices) {
           displayName: lead.displayName,
           summary: lead.summary,
           intentLevel: lead.intentLevel,
+          autoFollowupEnabled: true,
+          nextActionAt: new Date(),
         });
         await services.store.upsertProfile({
           leadId: lead.leadId,
