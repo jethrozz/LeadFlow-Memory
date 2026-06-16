@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createApp, createFakeServices } from "./app.js";
+import { createWorkflowService } from "@leadflow/agents";
+import { FakeXhsChatClient, FakeXhsDiscoveryClient } from "@leadflow/connectors";
+import { FakeLlmProvider } from "@leadflow/llm";
+import { FakeMemWalClient } from "@leadflow/memwal";
+import { FakeWalrusArtifactClient } from "@leadflow/walrus";
+import { createApp, createFakeServices, type ApiServices } from "./app.js";
+import { createMemoryStore } from "./store.js";
 
 describe("api app", () => {
   const app = createApp(createFakeServices());
@@ -147,6 +153,61 @@ describe("api app", () => {
     expect(json.loggedIn).toBe(true);
   });
 
+  it("persists campaign-discovered leads into the dashboard store", async () => {
+    // 关闭工具调用间隔，避免测试因 fake 工作流里的 sleep 而超时
+    process.env.XHS_DISCOVERY_DELAY_MS = "0";
+    // 让 fake LLM 同时满足相关性/意向门槛并产出画像字段，驱动完整 campaign 发现路径
+    const llm = new FakeLlmProvider({
+      content: JSON.stringify({
+        relevant: true,
+        hasIntent: true,
+        intentLevel: "A",
+        summary: "渝北三房购房意向",
+        memory: "客户预算 130 万以内，关注渝北三房。",
+        extractedFields: { budget: "130万以内", district: "渝北", layout: "三房" },
+        needs: ["三房", "近地铁"],
+        concerns: ["预算压力"],
+      }),
+    });
+    const memwal = new FakeMemWalClient();
+    const walrus = new FakeWalrusArtifactClient();
+    const xhsDiscovery = new FakeXhsDiscoveryClient();
+    const services: ApiServices = {
+      llm,
+      memwal,
+      walrus,
+      xhsChat: new FakeXhsChatClient(),
+      xhsDiscovery,
+      workflows: createWorkflowService({ llm, memwal, walrus, xhsDiscovery }),
+      store: createMemoryStore(),
+    };
+    const campaignApp = createApp(services);
+
+    const runResponse = await campaignApp.request("/api/workflows/discovery/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ campaignId: "manual_search", seedKeywords: ["渝北三房"] }),
+    });
+    expect(runResponse.status).toBe(200);
+    const runJson = (await runResponse.json()) as { leadsCreated: number };
+    expect(runJson.leadsCreated).toBeGreaterThan(0);
+
+    const listResponse = await campaignApp.request("/api/dashboard/leads");
+    const list = (await listResponse.json()) as { items: Array<{ id: string }> };
+    expect(list.items.length).toBe(runJson.leadsCreated);
+
+    const detailResponse = await campaignApp.request(`/api/dashboard/leads/${list.items[0].id}`);
+    const detail = (await detailResponse.json()) as {
+      profile: { fields: Record<string, unknown>; needs: string[] };
+      artifacts: unknown[];
+      timeline: Array<{ type: string }>;
+    };
+    expect(Object.keys(detail.profile.fields).length).toBeGreaterThan(0);
+    expect(detail.profile.needs).toContain("三房");
+    expect(detail.artifacts.length).toBeGreaterThan(0);
+    expect(detail.timeline.some((e) => e.type === "lead_discovered")).toBe(true);
+  });
+
   it("dashboard reflects workflow outputs instead of fixtures", async () => {
     await app.request("/api/workflows/discovery/run", {
       method: "POST",
@@ -168,5 +229,50 @@ describe("api app", () => {
         (e) => e.type === "lead_discovered"
       )
     ).toBe(true);
+  });
+
+  it("start-followup 入列并立即跑一步（首触发开场 → contacting）", async () => {
+    const prev = process.env.AUTO_FOLLOWUP_DEVICE_ID;
+    process.env.AUTO_FOLLOWUP_DEVICE_ID = "test-device";
+    try {
+      const services = createFakeServices();
+      const flApp = createApp(services);
+      await services.store.upsertCampaign({ id: "c1" });
+      await services.store.upsertLead({
+        id: "lead_fl",
+        campaignId: "c1",
+        platform: "xhs",
+        status: "discovered",
+        memorySpaceId: "space_fl",
+        displayName: "jethrozz",
+      });
+      await services.store.upsertSocialIdentity({
+        leadId: "lead_fl",
+        platform: "xhs",
+        externalUserId: "jethrozz",
+        redId: "jethrozz",
+        username: "jethrozz",
+      });
+
+      const res = await flApp.request("/api/leads/lead_fl/start-followup", { method: "POST" });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        result: { sent: boolean };
+        status: string;
+        followupTouchCount: number;
+        lastMessage: { direction: string } | null;
+      };
+      expect(body.result.sent).toBe(true);
+      expect(body.status).toBe("contacting");
+      expect(body.followupTouchCount).toBe(1);
+      expect(body.lastMessage?.direction).toBe("outbound");
+    } finally {
+      process.env.AUTO_FOLLOWUP_DEVICE_ID = prev;
+    }
+  });
+
+  it("start-followup 对不存在的线索返回 404", async () => {
+    const res = await app.request("/api/leads/nope/start-followup", { method: "POST" });
+    expect(res.status).toBe(404);
   });
 });

@@ -14,6 +14,17 @@ export type ProcessResult = { sent: boolean; skippedReason?: string };
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+const num = (v: string | undefined, d: number) => (v ? Number(v) : d);
+
+/** 从 env 读单条处理用的配置（路由手动触发与循环共用）。 */
+export function readFollowupConfig(): FollowupConfig {
+  return {
+    intervalMs: num(process.env.AUTO_FOLLOWUP_INTERVAL_MS, 60_000),
+    maxTouches: num(process.env.AUTO_FOLLOWUP_MAX_TOUCHES, 8),
+    deviceId: process.env.AUTO_FOLLOWUP_DEVICE_ID || undefined,
+  };
+}
+
 function readConfig(): {
   enabled: boolean;
   tickMs: number;
@@ -23,7 +34,6 @@ function readConfig(): {
   dailyCap: number;
   cfg: FollowupConfig;
 } {
-  const num = (v: string | undefined, d: number) => (v ? Number(v) : d);
   return {
     enabled: process.env.AUTO_FOLLOWUP_ENABLED === "true",
     tickMs: num(process.env.AUTO_FOLLOWUP_INTERVAL_MS, 60_000),
@@ -31,11 +41,7 @@ function readConfig(): {
     sendMinMs: num(process.env.AUTO_FOLLOWUP_SEND_MIN_MS, 3000),
     sendMaxMs: num(process.env.AUTO_FOLLOWUP_SEND_MAX_MS, 8000),
     dailyCap: num(process.env.AUTO_FOLLOWUP_DAILY_CAP, 50),
-    cfg: {
-      intervalMs: num(process.env.AUTO_FOLLOWUP_INTERVAL_MS, 60_000),
-      maxTouches: num(process.env.AUTO_FOLLOWUP_MAX_TOUCHES, 8),
-      deviceId: process.env.AUTO_FOLLOWUP_DEVICE_ID || undefined,
-    },
+    cfg: readFollowupConfig(),
   };
 }
 

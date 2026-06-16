@@ -170,5 +170,39 @@ export function leadsRoutes(services: ApiServices) {
     return c.json({ leadId, displayName: body.displayName, redId: body.redId, memorySpaceId, memoryRefId, artifactBlobId });
   });
 
+  // 手动把指定线索加入转化 agent 流程并立即跑一步（用于真机调试）。
+  // 入列（autoFollowupEnabled=true, nextActionAt=now）+ 立即 processLead 一次。
+  // 反复调用 = 手动逐步推进：首次发开场、之后每次查回复并回应。
+  // 与循环共用同一份 processLead；真机一步约 1 分钟，请求会阻塞到完成。
+  route.post("/:leadId/start-followup", async (c) => {
+    const leadId = c.req.param("leadId");
+    const lead = await services.store.getLead(leadId);
+    if (!lead) {
+      return c.json({ error: { code: "LEAD_NOT_FOUND" } }, 404);
+    }
+
+    // 入列
+    await services.store.updateLeadFollowupState(leadId, {
+      autoFollowupEnabled: true,
+      nextActionAt: new Date(),
+    });
+
+    const { processLead, readFollowupConfig } = await import("../followup-loop.js");
+    const cfg = readFollowupConfig();
+    const fresh = await services.store.getLead(leadId);
+    const result = await processLead(services, fresh!, cfg, new Date());
+
+    const after = await services.store.getLead(leadId);
+    const messages = await services.store.listConversationMessages(leadId);
+    return c.json({
+      leadId,
+      result,
+      status: after?.status,
+      followupTouchCount: after?.followupTouchCount,
+      deviceId: cfg.deviceId,
+      lastMessage: messages[messages.length - 1] ?? null,
+    });
+  });
+
   return route;
 }
