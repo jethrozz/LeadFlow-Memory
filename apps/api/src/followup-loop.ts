@@ -93,6 +93,9 @@ export async function processLead(
 
   const campaign = (await services.store.getCampaign(lead.campaignId)) ?? {};
   const playbook = await loadPlaybookForCampaign(campaign);
+  console.log(
+    `[followup] lead ${lead.id} 使用 playbook: ${playbook?.id ?? "(无→内置默认词)"} role=${playbook?.agent?.role ?? "-"}`,
+  );
 
   // First touch (opening mode)
   if (lead.status === "discovered") {
