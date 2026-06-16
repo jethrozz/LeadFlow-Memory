@@ -41,6 +41,14 @@ export const discoverySystemPrompt = buildDiscoveryPrompt();
 
 // ── Conversion prompt ─────────────────────────────────────────────
 
+// 始终生效的基线规则（无论是否配置 playbook）：真人微信口吻、短、被拒退让。
+const STYLE_RULE =
+  "- 像真人发微信，口语、简短，控制在 20 字以内（最多 30 字），一次只说一件事，不要长篇大论、不要罗列条目。";
+const BACKOFF_RULES = [
+  "- 客户拒绝或回避加微信/留联系方式时，不要反复索要；先尊重，可改成「直接在小红书给您发」继续提供价值。",
+  "- 客户明确说不需要/不感兴趣/别发了，就把 outcome 标为 rejected，不要继续纠缠。",
+].join("\n");
+
 export function buildConversionPrompt(
   playbook?: ConversionPlaybook,
   mode: "reply" | "opening" = "reply",
@@ -49,7 +57,7 @@ export function buildConversionPrompt(
   const tone = playbook?.agent?.tone ?? "专业、亲切";
   const objective = playbook?.agent?.objective ?? "了解客户需求，建立信任关系";
 
-  const rules = playbook?.conversation_rules?.length
+  const playbookRules = playbook?.conversation_rules?.length
     ? playbook.conversation_rules.map((r) => `- ${r}`).join("\n")
     : "- 提问不超过 3 个，避免让客户感到被审问\n- 以一个明确的下一步行动结束";
 
@@ -62,10 +70,11 @@ export function buildConversionPrompt(
       `你是${role}。语气${tone}。目标：${objective}`,
       "",
       "规则：",
-      rules,
+      STYLE_RULE,
+      playbookRules,
       forbidden,
       "",
-      "这是首次主动触达客户，请基于已知客户画像写一句自然的开场白，不要假设客户说过的话。",
+      "这是首次主动触达客户，请基于已知客户画像写一句自然简短的开场白，不要假设客户说过的话。",
       "返回 JSON：{ message, memory, extractedFields }",
       "message 为开场白，memory 为写入长期记忆的事实，extractedFields 为画像字段。",
     ].join("\n");
@@ -79,15 +88,17 @@ export function buildConversionPrompt(
     `你是${role}。语气${tone}。目标：${objective}`,
     "",
     "规则：",
-    rules,
+    STYLE_RULE,
+    BACKOFF_RULES,
+    playbookRules,
     forbidden,
     "",
     "本次对话的成功目标（满足任一即算达成）：",
     goals,
     "",
     "请判断当前对话状态并返回 JSON：{ message, memory, extractedFields, outcome }",
-    'outcome 取值："goal_reached"（客户已满足上述目标）、"rejected"（客户明确拒绝/不感兴趣）、"continue"（仍在沟通中）。',
-    "message 为回复话术，memory 为写入长期记忆的事实，extractedFields 为本次抽取的画像字段。",
+    'outcome 取值："goal_reached"（客户已满足上述目标）、"rejected"（客户明确拒绝/不感兴趣/明说不加微信不看房）、"continue"（仍在沟通中）。',
+    "message 为回复话术（务必简短），memory 为写入长期记忆的事实，extractedFields 为本次抽取的画像字段。",
   ].join("\n");
 }
 
