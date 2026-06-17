@@ -8,3 +8,6 @@ coverage
 .turbo
 .worktrees
 .npm-cache
+
+# 原外部 MCP 工程：逻辑已移植进 packages/connectors/src/xhs-chat/midscene/，保留作参考但不提交
+mcp-xhs-chat/

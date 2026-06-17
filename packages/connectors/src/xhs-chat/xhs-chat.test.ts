@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createXhsChatClientFromEnv, FakeXhsChatClient } from "../index.js";
+import { createXhsChatClientFromEnv, FakeXhsChatClient, XhsMidsceneClient } from "../index.js";
 
 describe("XHS chat connector", () => {
   it("syncs conversation messages for a lead identity", async () => {
@@ -31,5 +31,10 @@ describe("XHS chat client configuration", () => {
   it("uses fake client when XHS_CHAT_MODE=fake", () => {
     const client = createXhsChatClientFromEnv({ XHS_CHAT_MODE: "fake" });
     expect(client).toBeInstanceOf(FakeXhsChatClient);
+  });
+
+  it("defaults to in-process Midscene client (no device connection at construction)", () => {
+    const client = createXhsChatClientFromEnv({ MIDSCENE_MODEL_API_KEY: "test-key" });
+    expect(client).toBeInstanceOf(XhsMidsceneClient);
   });
 });
