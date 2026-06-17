@@ -147,11 +147,14 @@ export async function processLead(
     return { sent: false };
   }
 
-  // Has reply — generate response and decide outcome
+  // Has reply — generate response and decide outcome。
+  // 取最近若干轮对话原文（syncConversation 已把新回复入库），让 LLM 接得上上下文。
+  const recent = (await services.store.listConversationMessages(lead.id)).slice(-10);
   const conv = await services.workflows.runConversion({
     leadId: lead.id,
     memorySpaceId: lead.memorySpaceId,
     customerMessage: lastInboundContent,
+    conversationHistory: recent.map((m) => ({ direction: m.direction, content: m.content })),
     playbook,
   });
   const decision = decideNextAction({

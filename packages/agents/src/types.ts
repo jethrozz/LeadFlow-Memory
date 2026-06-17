@@ -29,10 +29,15 @@ export type DiscoveryResult = {
 
 export type ConversionOutcome = "continue" | "goal_reached" | "rejected";
 
+// 最近对话的一轮（供短期上下文连贯，区别于 MemWal 的长期画像召回）。
+export type ConversationTurn = { direction: "inbound" | "outbound"; content: string };
+
 export type ConversionInput = {
   leadId: string;
   memorySpaceId: string;
   customerMessage?: string; // absence = opening mode (first touch)
+  // 最近几轮对话原文（含我方与客户），让 LLM 接得上自己上一句说了啥。
+  conversationHistory?: ConversationTurn[];
   playbook?: ConversionPlaybook;
 };
 

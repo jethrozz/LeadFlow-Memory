@@ -39,12 +39,19 @@ export async function runConversionWorkflow(
 
   const systemPrompt = buildConversionPrompt(input.playbook, isOpening ? "opening" : "reply");
 
+  // 把最近对话原文拼成可读 transcript，让 LLM 看到来回上下文（含自己上一句），而不只是最新一句。
+  const history = input.conversationHistory ?? [];
+  const transcript = history
+    .map((m) => `${m.direction === "outbound" ? "我(顾问)" : "客户"}：${m.content}`)
+    .join("\n");
+
   const raw = await services.llm.chatJson({
     system: systemPrompt,
     messages: [
       {
         role: "user",
         content: JSON.stringify({
+          recentConversation: transcript || undefined,
           customerMessage: input.customerMessage ?? "(首次主动触达，请生成开场白)",
           recalledMemory: recalled.map((memory) => memory.content),
         }),
