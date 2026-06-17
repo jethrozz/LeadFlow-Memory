@@ -34,7 +34,12 @@ export async function syncConversation(
   input: Identity & { sinceTime?: string },
 ): Promise<{ newInboundCount: number; lastInboundContent?: string }> {
   const existing = await services.store.listConversationMessages(input.leadId);
-  const seen = new Set(existing.map((m) => `${m.direction}|${m.sentAt}|${m.content}`));
+  // 按「内容」去重（不带 direction/时间）：VL 读屏常把我方右侧气泡误判成对方，
+  // 若按 direction+时间去重会让 agent 把自己发过、已入库的消息当成新回复，导致自言自语刷屏。
+  // 归一化去掉空格+标点（容忍 VL 把全/半角标点、结尾句号读得不一致），只要内容已入库就跳过。
+  const norm = (c: string) =>
+    c.replace(/[\s，。！？、；：,.!?;:~…·、""''「」『』（）()【】\[\]-]/g, "");
+  const seen = new Set(existing.map((m) => norm(m.content)));
   const sinceTime =
     input.sinceTime ?? (existing.length ? existing[existing.length - 1].sentAt : undefined);
 
@@ -62,8 +67,8 @@ export async function syncConversation(
   let newInboundCount = 0;
   let lastInboundContent: string | undefined;
   for (const msg of messages) {
-    const key = `${msg.direction}|${msg.sentAt}|${msg.content}`;
-    if (seen.has(key)) continue;
+    const key = norm(msg.content);
+    if (!key || seen.has(key)) continue;
     seen.add(key);
     await services.store.appendConversationMessage(input.leadId, {
       direction: msg.direction,
