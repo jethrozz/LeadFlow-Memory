@@ -193,5 +193,26 @@ export function leadsRoutes(services: ApiServices) {
     });
   });
 
+  // 模拟 worker 崩溃：把线索租约置过期 + 假 workerId，让真 worker 下一 tick 认领并触发 handoff。
+  route.post("/:leadId/simulate-crash", async (c) => {
+    const leadId = c.req.param("leadId");
+    const lead = await services.store.getLead(leadId);
+    if (!lead) {
+      return c.json({ error: { code: "LEAD_NOT_FOUND" } }, 404);
+    }
+    if (lead.status !== "contacting") {
+      return c.json(
+        { error: { code: "NOT_CONTACTING", message: "仅 contacting(进行中对话) 的线索可模拟接管" } },
+        400,
+      );
+    }
+    await services.store.updateLeadFollowupState(leadId, {
+      workerId: "worker_crashed_demo",
+      leaseExpiresAt: new Date(Date.now() - 1000),
+    });
+    const after = await services.store.getLead(leadId);
+    return c.json({ leadId, simulated: true, status: after?.status, workerId: after?.workerId });
+  });
+
   return route;
 }

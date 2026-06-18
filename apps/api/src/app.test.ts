@@ -261,4 +261,26 @@ describe("api app", () => {
     const res = await app.request("/api/leads/nope/start-followup", { method: "POST" });
     expect(res.status).toBe(404);
   });
+
+  it("simulate-crash 把 contacting 线索租约置过期+假 worker", async () => {
+    const services = createFakeServices();
+    const a = createApp(services);
+    await services.store.upsertCampaign({ id: "c1" });
+    await services.store.upsertLead({ id: "lx", campaignId: "c1", platform: "xhs", status: "contacting", memorySpaceId: "s", displayName: "X", workerId: "worker-real", leaseExpiresAt: new Date(Date.now() + 60_000) });
+
+    const res = await a.request("/api/leads/lx/simulate-crash", { method: "POST" });
+    expect(res.status).toBe(200);
+    const lead = await services.store.getLead("lx");
+    expect(lead?.workerId).toBe("worker_crashed_demo");
+    expect(lead?.leaseExpiresAt!.getTime()).toBeLessThan(Date.now());
+  });
+
+  it("simulate-crash 对非 contacting 线索返回 400", async () => {
+    const services = createFakeServices();
+    const a = createApp(services);
+    await services.store.upsertCampaign({ id: "c1" });
+    await services.store.upsertLead({ id: "ld", campaignId: "c1", platform: "xhs", status: "discovered", memorySpaceId: "s", displayName: "D" });
+    const res = await a.request("/api/leads/ld/simulate-crash", { method: "POST" });
+    expect(res.status).toBe(400);
+  });
 });

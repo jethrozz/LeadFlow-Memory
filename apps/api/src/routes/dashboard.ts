@@ -15,6 +15,9 @@ function toLeadListItem(lead: StoredLead, profile: StoredProfile | undefined) {
     // 侧边栏线索卡片展示区域与前两个需求标签
     district: profile?.fields.district?.value,
     needs: profile?.needs ?? [],
+    workerId: lead.workerId ?? null,
+    leaseExpiresAt: lead.leaseExpiresAt ? lead.leaseExpiresAt.toISOString() : null,
+    followupTouchCount: lead.followupTouchCount ?? 0,
   };
 }
 
