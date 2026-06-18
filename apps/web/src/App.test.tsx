@@ -110,8 +110,8 @@ describe("LeadFlow Dashboard", () => {
 
     // 下一步跟进话术 + 操作按钮
     expect(screen.getByText(/渝北三房重新筛了一版/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "同步小红书聊天" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "发送跟进私信" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "触发接力恢复" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "加入跟进" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "模拟崩溃" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "手动发" })).toBeInTheDocument();
   });
 });

@@ -9,6 +9,9 @@ export type DashboardLeadItem = {
   isDemoSeed?: boolean;
   district?: string;
   needs?: string[];
+  workerId?: string | null;
+  leaseExpiresAt?: string | null;
+  followupTouchCount?: number;
 };
 
 export type ProfileField = { label: string; value: string; confidence?: number };

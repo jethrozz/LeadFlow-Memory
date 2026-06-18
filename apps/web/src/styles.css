@@ -740,3 +740,20 @@ code {
   color: var(--muted);
   font-size: 12px;
 }
+
+.badge {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-right: 4px;
+  display: inline-block;
+}
+.badge.status-contacting { background: #2563eb22; color: #2563eb; }
+.badge.status-discovered { background: #d9770622; color: #d97706; }
+.badge.status-converted { background: #16a34a22; color: #16a34a; }
+.badge.status-lost { background: #dc262622; color: #dc2626; }
+.badge.status-paused { background: #71717a22; color: #71717a; }
+.badge.worker { background: #7c3aed22; color: #7c3aed; font-family: monospace; font-size: 10px; }
+.badge.none { background: #f1f5f922; color: #94a3b8; }
+.lead-sub { font-size: 12px; color: var(--text-muted, #94a3b8); margin-top: 4px; }
+.timeline-event.handoff { border-left: 2px solid var(--accent, #7f77dd); background: rgba(127,119,221,.08); padding-left: 8px; }

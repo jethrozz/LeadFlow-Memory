@@ -20,25 +20,6 @@ export async function fetchDashboardLeadDetail(leadId: string): Promise<Dashboar
   return requestJson<DashboardLeadDetail>(`/api/dashboard/leads/${leadId}`);
 }
 
-export async function seedDemo(): Promise<{ seeded: boolean; leadId: string }> {
-  const response = await fetch(`${API_BASE_URL}/api/demo/seed-real-estate`, { method: "POST" });
-  if (!response.ok) throw new Error(`Seed failed: ${response.status}`);
-  return response.json();
-}
-
-export async function syncConversation(leadId: string) {
-  const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}/conversation/sync`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      deviceId: "device-1",
-      xhsUsername: "重庆买房小陈",
-    }),
-  });
-  if (!response.ok) throw new Error(`Sync failed: ${response.status}`);
-  return response.json();
-}
-
 export async function sendFollowup(leadId: string, message: string) {
   const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}/conversation/send`, {
     method: "POST",
@@ -53,17 +34,14 @@ export async function sendFollowup(leadId: string, message: string) {
   return response.json();
 }
 
-export async function runHandoff(leadId: string) {
-  const response = await fetch(`${API_BASE_URL}/api/workflows/handoff/run`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      leadId,
-      memorySpaceId: "space_001",
-      fromWorkerId: "worker-1",
-      toWorkerId: "worker-2",
-    }),
-  });
-  if (!response.ok) throw new Error(`Handoff failed: ${response.status}`);
+export async function startFollowup(leadId: string) {
+  const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}/start-followup`, { method: "POST" });
+  if (!response.ok) throw new Error(`start-followup failed: ${response.status}`);
+  return response.json();
+}
+
+export async function simulateCrash(leadId: string) {
+  const response = await fetch(`${API_BASE_URL}/api/leads/${leadId}/simulate-crash`, { method: "POST" });
+  if (!response.ok) throw new Error(`simulate-crash failed: ${response.status}`);
   return response.json();
 }

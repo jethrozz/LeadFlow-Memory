@@ -2,10 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   fetchDashboardLeadDetail,
   fetchDashboardLeads,
-  runHandoff,
-  seedDemo,
   sendFollowup,
-  syncConversation,
+  simulateCrash,
+  startFollowup,
 } from "./api";
 import type { DashboardLeadDetail, DashboardLeadItem } from "./types";
 import "./styles.css";
@@ -61,14 +60,8 @@ export function App() {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("artifacts");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
-
-  const loadLeads = async (preferLeadId?: string) => {
-    const items = await fetchDashboardLeads();
-    setLeads(items);
-    setSelectedLeadId((current) => preferLeadId ?? current ?? items[0]?.id ?? null);
-    setIsLoading(false);
-  };
+  const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -99,39 +92,31 @@ export function App() {
     };
   }, [selectedLeadId]);
 
-  const refreshSelectedLead = async () => {
-    if (!selectedLeadId) return;
-    setDetail(await fetchDashboardLeadDetail(selectedLeadId));
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (busy) return;
+      fetchDashboardLeads().then(setLeads).catch(() => {});
+      if (selectedLeadId) {
+        fetchDashboardLeadDetail(selectedLeadId).then(setDetail).catch(() => {});
+      }
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [busy, selectedLeadId]);
 
-  const handleSeed = async () => {
-    setIsSeeding(true);
+  async function withBusy(fn: () => Promise<unknown>) {
+    setBusy(true);
     try {
-      const { leadId } = await seedDemo();
-      await loadLeads(leadId);
-      setSelectedLeadId(leadId);
+      await fn();
+      const items = await fetchDashboardLeads();
+      setLeads(items);
+      if (selectedLeadId) setDetail(await fetchDashboardLeadDetail(selectedLeadId));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
     } finally {
-      setIsSeeding(false);
+      setBusy(false);
     }
-  };
+  }
 
-  const handleSync = async () => {
-    if (!selectedLeadId) return;
-    await syncConversation(selectedLeadId);
-    await refreshSelectedLead();
-  };
-
-  const handleSend = async () => {
-    if (!selectedLeadId || !detail?.nextFollowup) return;
-    await sendFollowup(selectedLeadId, detail.nextFollowup.message);
-    await refreshSelectedLead();
-  };
-
-  const handleHandoff = async () => {
-    if (!selectedLeadId) return;
-    await runHandoff(selectedLeadId);
-    await refreshSelectedLead();
-  };
 
   const activeLead = leads.find((lead) => lead.id === selectedLeadId) ?? null;
   const activeEvent =
@@ -178,10 +163,7 @@ export function App() {
             <p className="lead-meta">加载线索中…</p>
           ) : leads.length === 0 ? (
             <div className="seed-empty">
-              <p>尚无线索数据。载入演示数据集即可查看完整画像。</p>
-              <button type="button" onClick={handleSeed} disabled={isSeeding}>
-                {isSeeding ? "载入中…" : "载入演示数据"}
-              </button>
+              <p>尚无线索数据。请通过 API 添加线索后刷新。</p>
             </div>
           ) : (
             <div className="lead-list">
@@ -204,6 +186,10 @@ export function App() {
                     <span className="lead-need">{lead.needs.slice(0, 2).join(" · ")}</span>
                   ) : null}
                   <span className="lead-state">{statusLabel(lead.status)}</span>
+                  <span className={`badge status-${lead.status}`}>{lead.status}</span>
+                  {lead.workerId
+                    ? <span className="badge worker">{lead.workerId}</span>
+                    : <span className="badge none">无主</span>}
                 </button>
               ))}
             </div>
@@ -246,6 +232,9 @@ export function App() {
 
             {detail ? (
               <>
+                <div className="lead-sub">
+                  {detail.lead.workerId ? `worker ${detail.lead.workerId}` : "无主"} · 触达 {detail.lead.followupTouchCount ?? 0}
+                </div>
                 <div className="requirement-grid">
                   <div>
                     <span>预算</span>
@@ -300,7 +289,11 @@ export function App() {
             <div className="timeline">
               {(detail?.timeline ?? []).map((event) => (
                 <button
-                  className={event.id === activeEvent?.id ? "timeline-event active" : "timeline-event"}
+                  className={[
+                    "timeline-event",
+                    event.id === activeEvent?.id ? "active" : "",
+                    event.type.startsWith("handoff") ? "handoff" : "",
+                  ].filter(Boolean).join(" ")}
                   key={event.id}
                   onClick={() => setActiveEventId(event.id)}
                   type="button"
@@ -350,19 +343,19 @@ export function App() {
               </div>
             ) : null}
             <div className="follow-up-actions">
-              <button type="button" onClick={handleSync} disabled={!selectedLeadId}>
-                同步小红书聊天
+              <button type="button" disabled={!selectedLeadId || busy}
+                onClick={() => withBusy(() => startFollowup(selectedLeadId!))}>
+                加入跟进
               </button>
-              <button
-                className="primary"
-                type="button"
-                onClick={handleSend}
-                disabled={!detail?.nextFollowup}
-              >
-                发送跟进私信
+              <button type="button"
+                disabled={!selectedLeadId || busy || detail?.lead.status !== "contacting"}
+                onClick={() => withBusy(() => simulateCrash(selectedLeadId!))}>
+                模拟崩溃
               </button>
-              <button type="button" onClick={handleHandoff} disabled={!selectedLeadId}>
-                触发接力恢复
+              <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="手动发一句…" />
+              <button type="button" disabled={!selectedLeadId || busy || !draft}
+                onClick={() => withBusy(async () => { await sendFollowup(selectedLeadId!, draft); setDraft(""); })}>
+                手动发
               </button>
             </div>
           </section>
