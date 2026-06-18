@@ -3,7 +3,7 @@ import { createFakeServices, type ApiServices } from "./app.js";
 import { processLead } from "./followup-loop.js";
 import type { XhsConversationMessage } from "@leadflow/connectors";
 
-const CFG = { intervalMs: 60_000, maxTouches: 8, deviceId: "d1" };
+const CFG = { intervalMs: 60_000, maxTouches: 8, deviceId: "d1", workerId: "test-worker", leaseMs: 90_000 };
 
 async function seedLead(services: ApiServices, id: string, status: string) {
   await services.store.upsertCampaign({ id: "c1" });

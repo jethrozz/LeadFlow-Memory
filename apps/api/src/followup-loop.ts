@@ -3,11 +3,17 @@ import type { StoredLead } from "./store.js";
 import { decideNextAction } from "./followup-decision.js";
 import { loadPlaybookForCampaign } from "./playbook-loader.js";
 import { sendFollowup, syncConversation } from "./conversation-service.js";
+import { hostname } from "node:os";
+import { randomBytes } from "node:crypto";
+
+const WORKER_ID = `worker_${hostname()}_${process.pid}_${randomBytes(2).toString("hex")}`;
 
 export type FollowupConfig = {
   intervalMs: number;
   maxTouches: number;
   deviceId?: string;
+  workerId: string;
+  leaseMs: number;
 };
 
 export type ProcessResult = { sent: boolean; skippedReason?: string };
@@ -22,6 +28,8 @@ export function readFollowupConfig(): FollowupConfig {
     intervalMs: num(process.env.AUTO_FOLLOWUP_INTERVAL_MS, 60_000),
     maxTouches: num(process.env.AUTO_FOLLOWUP_MAX_TOUCHES, 8),
     deviceId: process.env.AUTO_FOLLOWUP_DEVICE_ID || undefined,
+    workerId: WORKER_ID,
+    leaseMs: num(process.env.AUTO_FOLLOWUP_LEASE_MS, 90_000),
   };
 }
 
@@ -62,15 +70,23 @@ function dailyCount(): number {
   return dailyCounter.date === today ? dailyCounter.count : 0;
 }
 
+function leasePatch(cfg: FollowupConfig, now: Date, nextActionAt: Date | null) {
+  return nextActionAt == null
+    ? { workerId: null, leaseExpiresAt: null }
+    : { workerId: cfg.workerId, leaseExpiresAt: new Date(now.getTime() + cfg.leaseMs) };
+}
+
 export async function processLead(
   services: ApiServices,
   lead: StoredLead,
   cfg: FollowupConfig,
   now: Date,
+  prevWorkerId: string | null = null,
 ): Promise<ProcessResult> {
   const backoff = () =>
     services.store.updateLeadFollowupState(lead.id, {
       nextActionAt: new Date(now.getTime() + cfg.intervalMs),
+      ...leasePatch(cfg, now, new Date(now.getTime() + cfg.intervalMs)),
     });
 
   // Resolve identity
@@ -118,6 +134,7 @@ export async function processLead(
       status: decision.nextStatus,
       nextActionAt: decision.nextActionAt,
       followupTouchCount: (lead.followupTouchCount ?? 0) + 1,
+      ...leasePatch(cfg, now, decision.nextActionAt),
     });
     return { sent: true };
   }
@@ -143,7 +160,10 @@ export async function processLead(
       intervalMs: cfg.intervalMs,
       now,
     });
-    await services.store.updateLeadFollowupState(lead.id, { nextActionAt: decision.nextActionAt });
+    await services.store.updateLeadFollowupState(lead.id, {
+      nextActionAt: decision.nextActionAt,
+      ...leasePatch(cfg, now, decision.nextActionAt),
+    });
     return { sent: false };
   }
 
@@ -176,6 +196,7 @@ export async function processLead(
     status: decision.nextStatus,
     nextActionAt: decision.nextActionAt,
     followupTouchCount: (lead.followupTouchCount ?? 0) + (sent ? 1 : 0),
+    ...leasePatch(cfg, now, decision.nextActionAt),
   });
   return { sent };
 }
@@ -186,7 +207,7 @@ export function startFollowupLoop(services: ApiServices): { stop: () => void } {
     console.log("[followup] AUTO_FOLLOWUP_ENABLED 未开启，自动跟进循环不启动");
     return { stop: () => {} };
   }
-  console.log(`[followup] 自动跟进循环启动，每 ${tickMs}ms 一轮`);
+  console.log(`[followup] 自动跟进循环启动 worker=${cfg.workerId}，每 ${tickMs}ms 一轮`);
 
   let running = false;
 
@@ -199,11 +220,11 @@ export function startFollowupLoop(services: ApiServices): { stop: () => void } {
         return;
       }
       const now = new Date();
-      const leads = await services.store.listActiveFollowupLeads(now, batchSize);
-      for (const lead of leads) {
+      const claimed = await services.store.claimDueLeads(cfg.workerId, now, cfg.leaseMs, batchSize);
+      for (const { lead, prevWorkerId } of claimed) {
         if (dailyCount() >= dailyCap) break;
         try {
-          const r = await processLead(services, lead, cfg, now);
+          const r = await processLead(services, lead, cfg, now, prevWorkerId);
           if (r.sent) {
             bumpDaily();
             await sleep(sendMinMs + Math.random() * (sendMaxMs - sendMinMs));

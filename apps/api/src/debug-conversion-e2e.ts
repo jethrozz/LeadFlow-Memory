@@ -1,7 +1,7 @@
 // 端到端调试：真实服务 mock 一条线索 → 跑真实转化 agent（processLead 开场模式）→ 真机发送。
 // 运行：node_modules/.bin/tsx --env-file=.env apps/api/src/debug-conversion-e2e.ts
 import { createServicesFromEnv } from "./app.js";
-import { processLead } from "./followup-loop.js";
+import { processLead, readFollowupConfig } from "./followup-loop.js";
 
 const DEVICE = process.env.AUTO_FOLLOWUP_DEVICE_ID || "b759b4fa";
 const USER = "jethrozz";
@@ -81,7 +81,7 @@ async function main() {
   const result = await processLead(
     services,
     lead,
-    { intervalMs: 60_000, maxTouches: 8, deviceId: DEVICE },
+    { ...readFollowupConfig(), deviceId: DEVICE },
     new Date(),
   );
 
