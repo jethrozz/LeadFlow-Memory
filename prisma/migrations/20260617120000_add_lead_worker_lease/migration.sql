@@ -1,0 +1,2 @@
+ALTER TABLE "Lead" ADD COLUMN "workerId" TEXT;
+ALTER TABLE "Lead" ADD COLUMN "leaseExpiresAt" TIMESTAMP(3);

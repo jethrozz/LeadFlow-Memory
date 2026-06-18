@@ -16,7 +16,11 @@ export type StoredLead = {
   autoFollowupEnabled?: boolean;
   nextActionAt?: Date | null;
   followupTouchCount?: number;
+  workerId?: string | null;
+  leaseExpiresAt?: Date | null;
 };
+
+export type ClaimedLead = { lead: StoredLead; prevWorkerId: string | null };
 
 export type StoredMemoryRef = {
   id: string;
@@ -111,9 +115,22 @@ export interface ApiStore {
   getLead(leadId: string): Promise<StoredLead | undefined>;
   listLeads(): Promise<StoredLead[]>;
   listActiveFollowupLeads(now: Date, limit: number): Promise<StoredLead[]>;
+  claimDueLeads(
+    workerId: string,
+    now: Date,
+    leaseMs: number,
+    limit: number,
+  ): Promise<ClaimedLead[]>;
   updateLeadFollowupState(
     leadId: string,
-    patch: { status?: string; nextActionAt?: Date | null; followupTouchCount?: number; autoFollowupEnabled?: boolean },
+    patch: {
+      status?: string;
+      nextActionAt?: Date | null;
+      followupTouchCount?: number;
+      autoFollowupEnabled?: boolean;
+      workerId?: string | null;
+      leaseExpiresAt?: Date | null;
+    },
   ): Promise<void>;
   getDefaultDevice(): Promise<StoredDevice | undefined>;
 
@@ -219,6 +236,9 @@ export function createMemoryStore(): ApiStore {
         autoFollowupEnabled: lead.autoFollowupEnabled ?? existing?.autoFollowupEnabled ?? false,
         nextActionAt: lead.nextActionAt !== undefined ? lead.nextActionAt : (existing?.nextActionAt ?? null),
         followupTouchCount: lead.followupTouchCount ?? existing?.followupTouchCount ?? 0,
+        workerId: lead.workerId !== undefined ? lead.workerId : (existing?.workerId ?? null),
+        leaseExpiresAt:
+          lead.leaseExpiresAt !== undefined ? lead.leaseExpiresAt : (existing?.leaseExpiresAt ?? null),
         updatedAt: new Date().toISOString(),
       };
       leads.set(lead.id, next);
@@ -246,8 +266,12 @@ export function createMemoryStore(): ApiStore {
       if (patch.nextActionAt !== undefined) lead.nextActionAt = patch.nextActionAt;
       if (patch.followupTouchCount !== undefined) lead.followupTouchCount = patch.followupTouchCount;
       if (patch.autoFollowupEnabled !== undefined) lead.autoFollowupEnabled = patch.autoFollowupEnabled;
+      if (patch.workerId !== undefined) lead.workerId = patch.workerId;
+      if (patch.leaseExpiresAt !== undefined) lead.leaseExpiresAt = patch.leaseExpiresAt;
       lead.updatedAt = new Date().toISOString();
     },
+
+    claimDueLeads: async () => [],
 
     getDefaultDevice: async () => undefined, // no device table in memory mode
 

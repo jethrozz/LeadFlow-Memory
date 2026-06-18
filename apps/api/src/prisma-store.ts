@@ -2,6 +2,7 @@ import { type Prisma, PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import type {
   ApiStore,
+  ClaimedLead,
   StoredArtifactRef,
   StoredConversationMessage,
   StoredDevice,
@@ -70,6 +71,8 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           autoFollowupEnabled: lead.autoFollowupEnabled ?? false,
           nextActionAt: lead.nextActionAt ?? null,
           followupTouchCount: lead.followupTouchCount ?? 0,
+          workerId: lead.workerId ?? null,
+          leaseExpiresAt: lead.leaseExpiresAt ?? null,
         },
         update: {
           platform: lead.platform,
@@ -81,6 +84,8 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           ...(lead.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: lead.autoFollowupEnabled } : {}),
           ...(lead.nextActionAt !== undefined ? { nextActionAt: lead.nextActionAt } : {}),
           ...(lead.followupTouchCount !== undefined ? { followupTouchCount: lead.followupTouchCount } : {}),
+          ...(lead.workerId !== undefined ? { workerId: lead.workerId } : {}),
+          ...(lead.leaseExpiresAt !== undefined ? { leaseExpiresAt: lead.leaseExpiresAt } : {}),
         },
       });
       return leadFromPrisma(row);
@@ -109,6 +114,10 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
       return rows.map(leadFromPrisma);
     },
 
+    async claimDueLeads(): Promise<ClaimedLead[]> {
+      return [];
+    },
+
     async updateLeadFollowupState(leadId, patch) {
       await prisma.lead.update({
         where: { id: leadId },
@@ -117,6 +126,8 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
           ...(patch.nextActionAt !== undefined ? { nextActionAt: patch.nextActionAt } : {}),
           ...(patch.followupTouchCount !== undefined ? { followupTouchCount: patch.followupTouchCount } : {}),
           ...(patch.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: patch.autoFollowupEnabled } : {}),
+          ...(patch.workerId !== undefined ? { workerId: patch.workerId } : {}),
+          ...(patch.leaseExpiresAt !== undefined ? { leaseExpiresAt: patch.leaseExpiresAt } : {}),
         },
       });
     },
@@ -488,5 +499,7 @@ function leadFromPrisma(row: Record<string, unknown>): StoredLead {
     autoFollowupEnabled: (row.autoFollowupEnabled as boolean) ?? false,
     nextActionAt: (row.nextActionAt as Date | null) ?? null,
     followupTouchCount: (row.followupTouchCount as number) ?? 0,
+    workerId: (row.workerId as string | null) ?? null,
+    leaseExpiresAt: (row.leaseExpiresAt as Date | null) ?? null,
   };
 }
