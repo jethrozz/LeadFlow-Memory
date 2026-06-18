@@ -61,6 +61,53 @@ describe("processLead", () => {
     expect(lead?.nextActionAt).not.toBeNull(); // backoff set
   });
 
+  it("接管他人遗留的 contacting 线索 → 跑 handoff 恢复并写 handoff_recovered", async () => {
+    const services = createFakeServices();
+    await seedLead(services, "lh", "contacting");
+    let handoffCalled = false;
+    services.workflows = {
+      ...services.workflows,
+      runHandoffRecovery: async () => {
+        handoffCalled = true;
+        return { recoverySummary: "已恢复客户画像与下一步", artifact: { blobId: "0xproof" } as never };
+      },
+    } as never;
+    // 无新回复，避免触发回复轮（聚焦验证接管）
+    services.xhsChat = {
+      ...services.xhsChat,
+      getConversation: async () => ({ messages: [] }),
+    } as never;
+
+    const lead = (await services.store.getLead("lh"))!;
+    await processLead(services, lead, CFG, new Date(), "worker-OLD");
+
+    expect(handoffCalled).toBe(true);
+    const events = await services.store.listTimelineEvents("lh");
+    expect(events.some((e) => e.type === "handoff_recovered")).toBe(true);
+  });
+
+  it("discovered 被接管不跑 handoff（无上下文可恢复）", async () => {
+    const services = createFakeServices();
+    await seedLead(services, "ld", "discovered");
+    let handoffCalled = false;
+    services.workflows = {
+      ...services.workflows,
+      runHandoffRecovery: async () => {
+        handoffCalled = true;
+        return { recoverySummary: "x", artifact: { blobId: "y" } as never };
+      },
+      runConversion: async () => ({ message: "您好", memoryRef: "", artifact: {} as never, extractedFields: {}, outcome: "continue" as const }),
+    } as never;
+    services.xhsChat = {
+      ...services.xhsChat,
+      sendPrivateMessage: async () => ({ status: "sent", remoteMessageId: "out_1", sentAt: new Date().toISOString() }),
+    } as never;
+
+    const lead = (await services.store.getLead("ld"))!;
+    await processLead(services, lead, CFG, new Date(), "worker-OLD");
+    expect(handoffCalled).toBe(false);
+  });
+
   it("回复轮：检测到新回复 + rejected → lost 不再发", async () => {
     const services = createFakeServices();
     await seedLead(services, "l3", "contacting");

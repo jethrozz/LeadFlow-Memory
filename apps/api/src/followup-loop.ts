@@ -113,6 +113,42 @@ export async function processLead(
     `[followup] lead ${lead.id} 使用 playbook: ${playbook?.id ?? "(无→内置默认词)"} role=${playbook?.agent?.role ?? "-"}`,
   );
 
+  // 接管判定：认领到的线索原属于别的 worker(且非空)、且是进行中的对话 → 跑 handoff 恢复。
+  if (prevWorkerId && prevWorkerId !== cfg.workerId && lead.status === "contacting") {
+    console.log(`[followup] lead ${lead.id} 接管自 ${prevWorkerId}，跑 handoff 恢复`);
+    try {
+      const recovery = await services.workflows.runHandoffRecovery({
+        leadId: lead.id,
+        memorySpaceId: lead.memorySpaceId,
+        fromWorkerId: prevWorkerId,
+        toWorkerId: cfg.workerId,
+      });
+      await services.store.appendTimelineEvent({
+        leadId: lead.id,
+        type: "handoff_triggered",
+        summary: `worker ${prevWorkerId} → ${cfg.workerId}`,
+        agentName: "handoff",
+        workerId: cfg.workerId,
+        memoryRefs: [],
+        artifactRefs: [],
+      });
+      await services.store.appendTimelineEvent({
+        leadId: lead.id,
+        type: "handoff_recovered",
+        summary: recovery.recoverySummary || "已恢复上下文",
+        agentName: "handoff",
+        workerId: cfg.workerId,
+        memoryRefs: [],
+        artifactRefs: recovery.artifact?.blobId ? [recovery.artifact.blobId] : [],
+      });
+    } catch (err) {
+      console.warn(
+        `[followup] lead ${lead.id} handoff 恢复失败，继续跟进:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
   // First touch (opening mode)
   if (lead.status === "discovered") {
     const conv = await services.workflows.runConversion({
