@@ -78,6 +78,32 @@ describe("api store", () => {
     expect(lead?.nextActionAt).toBeNull();
   });
 
+  it("claimDueLeads 只认领无主/过期/本人，且记录 prevWorkerId", async () => {
+    const store = createMemoryStore();
+    await store.upsertCampaign({ id: "c1" });
+    const past = new Date(Date.now() - 1000);
+    const future = new Date(Date.now() + 60_000);
+    // a: 无主到期 → 可领
+    await store.upsertLead({ id: "a", campaignId: "c1", platform: "xhs", status: "contacting", memorySpaceId: "s", displayName: "A", autoFollowupEnabled: true, nextActionAt: past });
+    // b: 别人持有且租约未过期 → 不可领
+    await store.upsertLead({ id: "b", campaignId: "c1", platform: "xhs", status: "contacting", memorySpaceId: "s", displayName: "B", autoFollowupEnabled: true, nextActionAt: past, workerId: "other", leaseExpiresAt: future });
+    // c: 别人持有但租约过期 → 可领，prevWorkerId=other
+    await store.upsertLead({ id: "c", campaignId: "c1", platform: "xhs", status: "contacting", memorySpaceId: "s", displayName: "C", autoFollowupEnabled: true, nextActionAt: past, workerId: "other", leaseExpiresAt: past });
+
+    const now = new Date();
+    const claimed = await store.claimDueLeads("me", now, 90_000, 10);
+    const ids = claimed.map((x) => x.lead.id).sort();
+    expect(ids).toEqual(["a", "c"]);
+    const cClaim = claimed.find((x) => x.lead.id === "c");
+    expect(cClaim?.prevWorkerId).toBe("other");
+    expect(cClaim?.lead.workerId).toBe("me");
+    // 认领后 b 不受影响
+    expect((await store.getLead("b"))?.workerId).toBe("other");
+    // 再认领一次：已被 me 持有且租约未过期 → 仍可领(本人)，但 b 仍不可领
+    const again = await store.claimDueLeads("me", new Date(), 90_000, 10);
+    expect(again.map((x) => x.lead.id).sort()).toEqual(["a", "c"]);
+  });
+
   it("appends conversation messages in order", async () => {
     const store = createMemoryStore();
     await store.appendConversationMessage("lead_001", {

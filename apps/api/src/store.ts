@@ -271,7 +271,30 @@ export function createMemoryStore(): ApiStore {
       lead.updatedAt = new Date().toISOString();
     },
 
-    claimDueLeads: async () => [],
+    claimDueLeads: async (workerId, now, leaseMs, limit) => {
+      const eligible = [...leads.values()]
+        .filter(
+          (l) =>
+            l.autoFollowupEnabled === true &&
+            l.nextActionAt != null &&
+            l.nextActionAt <= now &&
+            (l.status === "discovered" || l.status === "contacting") &&
+            (l.workerId == null ||
+              (l.leaseExpiresAt != null && l.leaseExpiresAt < now) ||
+              l.workerId === workerId),
+        )
+        .sort((a, b) => a.nextActionAt!.getTime() - b.nextActionAt!.getTime())
+        .slice(0, limit);
+      const claimed: ClaimedLead[] = [];
+      for (const l of eligible) {
+        const prevWorkerId = l.workerId ?? null;
+        l.workerId = workerId;
+        l.leaseExpiresAt = new Date(now.getTime() + leaseMs);
+        l.updatedAt = new Date().toISOString();
+        claimed.push({ lead: { ...l }, prevWorkerId });
+      }
+      return claimed;
+    },
 
     getDefaultDevice: async () => undefined, // no device table in memory mode
 

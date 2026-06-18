@@ -114,8 +114,34 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
       return rows.map(leadFromPrisma);
     },
 
-    async claimDueLeads(): Promise<ClaimedLead[]> {
-      return [];
+    async claimDueLeads(workerId, now, leaseMs, limit) {
+      const candidates = await prisma.lead.findMany({
+        where: {
+          autoFollowupEnabled: true,
+          nextActionAt: { lte: now },
+          status: { in: ["discovered", "contacting"] as never },
+          OR: [{ workerId: null }, { leaseExpiresAt: { lt: now } }, { workerId }],
+        },
+        orderBy: { nextActionAt: "asc" },
+        take: limit,
+      });
+      const leaseUntil = new Date(now.getTime() + leaseMs);
+      const claimed: ClaimedLead[] = [];
+      for (const c of candidates) {
+        const prevWorkerId = ((c as Record<string, unknown>).workerId as string | null) ?? null;
+        const res = await prisma.lead.updateMany({
+          where: {
+            id: c.id,
+            OR: [{ workerId: null }, { leaseExpiresAt: { lt: now } }, { workerId }],
+          },
+          data: { workerId, leaseExpiresAt: leaseUntil },
+        });
+        if (res.count === 1) {
+          const row = await prisma.lead.findUnique({ where: { id: c.id } });
+          claimed.push({ lead: leadFromPrisma(row as Record<string, unknown>), prevWorkerId });
+        }
+      }
+      return claimed;
     },
 
     async updateLeadFollowupState(leadId, patch) {
