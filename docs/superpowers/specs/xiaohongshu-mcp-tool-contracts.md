@@ -76,61 +76,53 @@ username = text 中 "用户名:" 后的第一行
 
 ## get_feed_detail
 
-**入参（JSON）**：
+**入参（JSON）**：⚠️ 实测：inputSchema `additionalProperties: false`，**只接受这两个字段**，传任何其它字段（如 `max_comment_items`）会报 `-32602 unexpected additional properties`。评论条数上限只能在客户端切片。
 ```json
 {
-  "feed_id":             "string（必需，来自 search_feeds 的 feed.id）",
-  "xsec_token":          "string（必需，来自 search_feeds 的 feed.xsecToken）",
-  "load_all_comments":   "bool（可选，默认 false）",
-  "max_comment_items":   "int（可选，默认 20，评论条数上限）",
-  "click_more_replies":  "bool（可选，是否展开子评论）",
-  "max_replies_threshold": "int（可选，默认 10）",
-  "scroll_speed":        "slow | normal | fast（可选）"
+  "feed_id":    "string（必需，来自 search_feeds 的 feed.id）",
+  "xsec_token": "string（必需，来自 search_feeds 的 feed.xsecToken，原样传递，勿经 URL 编解码）"
 }
 ```
 
-**返回（JSON）**：
+**返回（JSON）**：⚠️ 实测：note 与 comments 嵌在 `data` 下；comments 是 `{ list, cursor, hasMore }` 对象，**不是数组**。
 ```json
 {
-  "note": {
-    "noteId":    "string（= feed_id）",
-    "xsecToken": "string",
-    "title":     "string",
-    "desc":      "string（正文内容）",
-    "type":      "string（normal | video）",
-    "time":      "int64（发布时间，Unix 毫秒时间戳）",
-    "ipLocation": "string",
-    "user": {
-      "userId":   "string",
-      "nickname": "string",
-      "avatar":   "string"
-    },
-    "interactInfo": {
-      "likedCount":     "string",
-      "commentCount":   "string",
-      "collectedCount": "string",
-      "sharedCount":    "string"
-    },
-    "imageList": [{ "url": "string" }]
-  },
-  "comments": [
-    {
-      "id":         "string（评论 ID）",
-      "noteId":     "string（所属帖子 ID）",
-      "content":    "string",
-      "likeCount":  "string",
-      "createTime": "int64（Unix 毫秒时间戳）",
+  "feed_id": "string",
+  "data": {
+    "note": {
+      "noteId":    "string（= feed_id）",
+      "xsecToken": "string",
+      "title":     "string",
+      "desc":      "string（正文内容）",
+      "type":      "string（normal | video）",
+      "time":      "int64（发布时间，Unix 毫秒时间戳）",
       "ipLocation": "string",
-      "userInfo": {
-        "userId":   "string",
-        "nickname": "string"
-      },
-      "subCommentCount": "int",
-      "subComments": [ "...（Comment 嵌套结构，字段同上）" ]
+      "user":        { "userId": "string", "nickname": "string", "avatar": "string" },
+      "interactInfo": { "likedCount": "string", "commentCount": "string", "collectedCount": "string", "sharedCount": "string" },
+      "imageList":   [{ "url": "string" }]
+    },
+    "comments": {
+      "cursor":  "string",
+      "hasMore": "bool",
+      "list": [
+        {
+          "id":         "string（评论 ID）",
+          "noteId":     "string（所属帖子 ID）",
+          "content":    "string",
+          "likeCount":  "string",
+          "createTime": "int64（Unix 毫秒时间戳）",
+          "ipLocation": "string",
+          "userInfo":   { "userId": "string", "nickname": "string" },
+          "subCommentCount": "string",
+          "subComments": [ "...（Comment 嵌套结构，字段同上）" ]
+        }
+      ]
     }
-  ]
+  }
 }
 ```
+
+⚠️ **部分 feed 拉不到详情**：视频/特殊类型 feed 会返回 `获取Feed详情失败: feed <id> not found in noteDetailMap`（实测约 1/4 比例）。客户端/工作流必须对单条 detail 失败容错跳过，不可中断整轮发现。
 
 ---
 
@@ -179,6 +171,6 @@ username = text 中 "用户名:" 后的第一行
 ## 运营约束
 
 - 单次搜索返回上限：由平台决定（实测约 20 条），通过 `maxPostsPerRun` 截断。
-- 评论默认取 20 条（`max_comment_items`），MVP 不做分页深采。
+- get_feed_detail 不支持评论条数参数；服务一次返回 `data.comments.list`，评论上限由客户端 `maxComments` 切片，MVP 不做分页深采。
 - 相邻工具调用之间加延迟：`XHS_DISCOVERY_DELAY_MS`（默认 2000ms）。
 - 所有操作只读：只调用 search_feeds、get_feed_detail、user_profile，不调用写操作工具。

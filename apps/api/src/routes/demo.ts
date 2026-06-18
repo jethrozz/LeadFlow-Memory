@@ -21,8 +21,8 @@ const FIELD_LABELS: Record<string, string> = {
 export function demoRoute(services: ApiServices) {
   const route = new Hono();
 
-  route.post("/seed-real-estate", (c) => {
-    const lead = services.store.upsertLead({
+  route.post("/seed-real-estate", async (c) => {
+    const lead = await services.store.upsertLead({
       id: leadChen.id,
       campaignId: leadChen.campaignId,
       platform: leadChen.platform,
@@ -34,7 +34,7 @@ export function demoRoute(services: ApiServices) {
       isDemoSeed: true,
     });
 
-    services.store.upsertProfile({
+    await services.store.upsertProfile({
       leadId: leadChen.id,
       summary: profileChen.summary,
       sourceNote: "想在渝北附近买个三房，预算别太高，孩子明年上小学，最好通勤方便。",
@@ -53,7 +53,7 @@ export function demoRoute(services: ApiServices) {
     });
 
     for (const message of conversationChen.messages) {
-      services.store.appendConversationMessage(leadChen.id, {
+      await services.store.appendConversationMessage(leadChen.id, {
         direction: message.from === "customer" ? "inbound" : "outbound",
         content: message.content,
         sentAt: message.sentAt,
@@ -61,7 +61,7 @@ export function demoRoute(services: ApiServices) {
     }
 
     for (const memory of memoriesChen) {
-      services.store.appendMemoryRef({
+      await services.store.appendMemoryRef({
         leadId: leadChen.id,
         memoryId: memory.memoryId,
         kind: memory.kind,
@@ -71,7 +71,7 @@ export function demoRoute(services: ApiServices) {
     }
 
     for (const artifact of artifactsChen) {
-      services.store.appendArtifactRef({
+      await services.store.appendArtifactRef({
         leadId: leadChen.id,
         artifactType: artifact.artifactType,
         blobId: artifact.blobId,
@@ -83,7 +83,7 @@ export function demoRoute(services: ApiServices) {
     // 让事件详情面板展示 Walrus blob 哈希（与原型一致）。
     const blobByArtifactId = new Map(artifactsChen.map((a) => [a.id, a.blobId]));
     for (const event of timelineChen) {
-      services.store.appendTimelineEvent({
+      await services.store.appendTimelineEvent({
         leadId: leadChen.id,
         type: event.type,
         summary: event.summary,
@@ -95,7 +95,7 @@ export function demoRoute(services: ApiServices) {
     }
 
     const followUp = dashboardLeadDetail.nextFollowUp;
-    services.store.upsertNextFollowup({
+    await services.store.upsertNextFollowup({
       leadId: leadChen.id,
       message: followUp.message,
       usedMemoryRefs: followUp.usedMemoryRefs,

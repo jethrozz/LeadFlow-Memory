@@ -20,7 +20,8 @@ import {
   FakeWalrusArtifactClient,
   type WalrusArtifactClient,
 } from "@leadflow/walrus";
-import { createStore, type ApiStore } from "./store.js";
+import { createMemoryStore, type ApiStore } from "./store.js";
+import { createPrismaStore } from "./prisma-store.js";
 import { artifactsRoute } from "./routes/artifacts.js";
 import { campaignsRoutes } from "./routes/campaigns.js";
 import { conversationsRoute } from "./routes/conversations.js";
@@ -63,16 +64,27 @@ export function createFakeServices(): ApiServices {
     xhsChat,
     xhsDiscovery,
     workflows: createWorkflowService({ llm, memwal, walrus, xhsDiscovery }),
-    store: createStore(),
+    store: createMemoryStore(),
   };
 }
 
-export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): ApiServices {
+export async function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Promise<ApiServices> {
   const llm = createLlmProviderFromEnv(env);
   const memwal = createMemWalClientFromEnv(env);
   const walrus = createWalrusClientFromEnv(env);
   const xhsChat = createXhsChatClientFromEnv(env);
   const xhsDiscovery = createXhsDiscoveryClientFromEnv(env);
+
+  // Use PrismaStore when DATABASE_URL is configured, otherwise fall back to memory store
+  let store: ApiStore;
+  if (env.DATABASE_URL) {
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient({ datasources: { db: { url: env.DATABASE_URL } } });
+    store = createPrismaStore(prisma);
+  } else {
+    store = createMemoryStore();
+  }
+
   return {
     llm,
     memwal,
@@ -80,7 +92,7 @@ export function createServicesFromEnv(env: NodeJS.ProcessEnv = process.env): Api
     xhsChat,
     xhsDiscovery,
     workflows: createWorkflowService({ llm, memwal, walrus, xhsDiscovery }),
-    store: createStore(),
+    store,
   };
 }
 

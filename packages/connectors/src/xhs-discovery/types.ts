@@ -3,6 +3,9 @@ export type XhsDiscoveryPost = {
   externalId: string;
   url: string;
   authorName?: string;
+  authorUserId?: string;
+  authorRedId?: string;
+  xsecToken?: string;
   authorUrl?: string;
   title?: string;
   content: string;
@@ -13,11 +16,21 @@ export type XhsDiscoveryPost = {
   raw?: unknown;
 };
 
+export type UserProfile = {
+  nickname?: string;
+  redId?: string;
+  gender?: string;
+  desc?: string;
+  ipLocation?: string;
+  avatar?: string;
+};
+
 export type XhsDiscoveryComment = {
   platform: "xhs";
   externalId: string;
   postExternalId: string;
   authorName?: string;
+  authorUserId?: string;
   authorUrl?: string;
   content: string;
   likeCount?: number;
@@ -47,5 +60,6 @@ export type XhsDiscoveryClient = {
     post: XhsDiscoveryPost;
     comments: XhsDiscoveryComment[];
   }>;
+  getUserProfile(input: { userId: string; xsecToken: string }): Promise<UserProfile>;
   getCreatorPosts?(input: { profileUrl: string; limit?: number }): Promise<XhsDiscoveryPost[]>;
 };

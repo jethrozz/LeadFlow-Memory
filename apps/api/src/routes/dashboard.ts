@@ -21,23 +21,32 @@ function toLeadListItem(lead: StoredLead, profile: StoredProfile | undefined) {
 export function dashboardRoutes(services: ApiServices) {
   const route = new Hono();
 
-  route.get("/leads", (c) => {
-    const items = services.store
-      .listLeads()
-      .map((lead) => toLeadListItem(lead, services.store.getProfile(lead.id)));
+  route.get("/leads", async (c) => {
+    const leads = await services.store.listLeads();
+    const items = await Promise.all(
+      leads.map(async (lead) => {
+        const profile = await services.store.getProfile(lead.id);
+        return toLeadListItem(lead, profile);
+      }),
+    );
     return c.json({ items });
   });
 
-  route.get("/leads/:leadId", (c) => {
+  route.get("/leads/:leadId", async (c) => {
     const leadId = c.req.param("leadId");
-    const lead = services.store.getLead(leadId);
+    const lead = await services.store.getLead(leadId);
     if (!lead) {
       return c.json(
         { error: { code: "LEAD_NOT_FOUND", message: `Lead '${leadId}' was not found.` } },
         404,
       );
     }
-    const profile = services.store.getProfile(leadId);
+    const profile = await services.store.getProfile(leadId);
+    const conversation = await services.store.listConversationMessages(leadId);
+    const timeline = await services.store.listTimelineEvents(leadId);
+    const memories = await services.store.listMemoryRefs(leadId);
+    const artifacts = await services.store.listArtifactRefs(leadId);
+    const nextFollowup = await services.store.getNextFollowup(leadId);
     return c.json({
       lead: toLeadListItem(lead, profile),
       profile: {
@@ -47,11 +56,11 @@ export function dashboardRoutes(services: ApiServices) {
         concerns: profile?.concerns ?? [],
         fields: profile?.fields ?? {},
       },
-      conversation: { messages: services.store.listConversationMessages(leadId) },
-      timeline: services.store.listTimelineEvents(leadId),
-      memories: services.store.listMemoryRefs(leadId),
-      artifacts: services.store.listArtifactRefs(leadId),
-      nextFollowup: services.store.getNextFollowup(leadId) ?? null,
+      conversation: { messages: conversation },
+      timeline,
+      memories,
+      artifacts,
+      nextFollowup: nextFollowup ?? null,
     });
   });
 

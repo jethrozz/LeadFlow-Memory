@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@mysten-incubation/memwal": "^0.0.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
