@@ -131,6 +131,9 @@ export interface ApiStore {
       workerId?: string | null;
       leaseExpiresAt?: Date | null;
     },
+    // 乐观锁：仅当线索当前 workerId === expectedWorkerId 时才写入。
+    // worker 收尾续租时带上自己的 id，被「模拟崩溃」改走后这次写入自动 no-op，避免覆盖。
+    opts?: { expectedWorkerId?: string },
   ): Promise<void>;
   getDefaultDevice(): Promise<StoredDevice | undefined>;
 
@@ -259,9 +262,11 @@ export function createMemoryStore(): ApiStore {
         .sort((a, b) => a.nextActionAt.getTime() - b.nextActionAt.getTime())
         .slice(0, limit),
 
-    updateLeadFollowupState: async (leadId, patch) => {
+    updateLeadFollowupState: async (leadId, patch, opts) => {
       const lead = leads.get(leadId);
       if (!lead) return;
+      // 乐观锁：已被他人接管/崩溃改走，放弃本次写入（不覆盖新持有者）。
+      if (opts?.expectedWorkerId !== undefined && lead.workerId !== opts.expectedWorkerId) return;
       if (patch.status !== undefined) lead.status = patch.status;
       if (patch.nextActionAt !== undefined) lead.nextActionAt = patch.nextActionAt;
       if (patch.followupTouchCount !== undefined) lead.followupTouchCount = patch.followupTouchCount;

@@ -104,6 +104,22 @@ describe("api store", () => {
     expect(again.map((x) => x.lead.id).sort()).toEqual(["a", "c"]);
   });
 
+  it("updateLeadFollowupState 带 expectedWorkerId 时，持有者变更则不覆盖(乐观锁)", async () => {
+    const store = createMemoryStore();
+    await store.upsertCampaign({ id: "c1" });
+    await store.upsertLead({ id: "a", campaignId: "c1", platform: "xhs", status: "contacting", memorySpaceId: "s", displayName: "A", workerId: "me", leaseExpiresAt: new Date(Date.now() + 90_000) });
+
+    // 我仍持有 → 续租生效
+    await store.updateLeadFollowupState("a", { nextActionAt: new Date(Date.now() + 30_000), workerId: "me", leaseExpiresAt: new Date(Date.now() + 90_000) }, { expectedWorkerId: "me" });
+    expect((await store.getLead("a"))?.workerId).toBe("me");
+
+    // 模拟崩溃：被改成 worker_crashed_demo
+    await store.updateLeadFollowupState("a", { workerId: "worker_crashed_demo", leaseExpiresAt: new Date(Date.now() - 1000) });
+    // 我收尾再续租，但已不持有 → no-op，不能覆盖回 me
+    await store.updateLeadFollowupState("a", { workerId: "me", leaseExpiresAt: new Date(Date.now() + 90_000) }, { expectedWorkerId: "me" });
+    expect((await store.getLead("a"))?.workerId).toBe("worker_crashed_demo");
+  });
+
   it("appends conversation messages in order", async () => {
     const store = createMemoryStore();
     await store.appendConversationMessage("lead_001", {

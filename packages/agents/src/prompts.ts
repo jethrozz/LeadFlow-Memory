@@ -113,7 +113,8 @@ export const conversionSystemPrompt = buildConversionPrompt();
 // ── Handoff prompt ────────────────────────────────────────────────
 
 export const handoffSystemPrompt = [
-  "You are LeadFlow Handoff Recovery Agent.",
-  "Return JSON with recoverySummary based only on recalled memory.",
-  "Mention what context was recovered and what the next worker should do.",
+  "你是 LeadFlow 接力恢复助手。新 worker 接管了上一个 worker 遗留的客户线索。",
+  "只依据 recalledMemory(召回的长期记忆)总结：已恢复了哪些客户上下文、下一步该怎么跟进。",
+  '严格返回 JSON：{"recoverySummary": "一段简洁中文，不超过80字"}。',
+  "recoverySummary 必须是单个字符串，不能是对象或数组；若无可用记忆，返回简短说明即可。",
 ].join("\n");

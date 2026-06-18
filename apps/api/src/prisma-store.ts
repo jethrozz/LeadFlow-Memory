@@ -144,18 +144,24 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
       return claimed;
     },
 
-    async updateLeadFollowupState(leadId, patch) {
-      await prisma.lead.update({
-        where: { id: leadId },
-        data: {
-          ...(patch.status !== undefined ? { status: patch.status as never } : {}),
-          ...(patch.nextActionAt !== undefined ? { nextActionAt: patch.nextActionAt } : {}),
-          ...(patch.followupTouchCount !== undefined ? { followupTouchCount: patch.followupTouchCount } : {}),
-          ...(patch.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: patch.autoFollowupEnabled } : {}),
-          ...(patch.workerId !== undefined ? { workerId: patch.workerId } : {}),
-          ...(patch.leaseExpiresAt !== undefined ? { leaseExpiresAt: patch.leaseExpiresAt } : {}),
-        },
-      });
+    async updateLeadFollowupState(leadId, patch, opts) {
+      const data = {
+        ...(patch.status !== undefined ? { status: patch.status as never } : {}),
+        ...(patch.nextActionAt !== undefined ? { nextActionAt: patch.nextActionAt } : {}),
+        ...(patch.followupTouchCount !== undefined ? { followupTouchCount: patch.followupTouchCount } : {}),
+        ...(patch.autoFollowupEnabled !== undefined ? { autoFollowupEnabled: patch.autoFollowupEnabled } : {}),
+        ...(patch.workerId !== undefined ? { workerId: patch.workerId } : {}),
+        ...(patch.leaseExpiresAt !== undefined ? { leaseExpiresAt: patch.leaseExpiresAt } : {}),
+      };
+      // 乐观锁：带 expectedWorkerId 时用条件 updateMany（行锁），不持有者写 0 行、自动 no-op。
+      if (opts?.expectedWorkerId !== undefined) {
+        await prisma.lead.updateMany({
+          where: { id: leadId, workerId: opts.expectedWorkerId },
+          data,
+        });
+        return;
+      }
+      await prisma.lead.update({ where: { id: leadId }, data });
     },
 
     async getDefaultDevice(): Promise<StoredDevice | undefined> {

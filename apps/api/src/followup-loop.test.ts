@@ -16,6 +16,10 @@ async function seedLead(services: ApiServices, id: string, status: string) {
     displayName: "X",
     autoFollowupEnabled: true,
     nextActionAt: new Date(),
+    // 模拟「已被本 worker 认领」的不变量(真实流程里 claimDueLeads 已置)，
+    // 否则续租的乐观锁守卫(expectedWorkerId)会 no-op。
+    workerId: CFG.workerId,
+    leaseExpiresAt: new Date(Date.now() + CFG.leaseMs),
   });
   await services.store.upsertSocialIdentity({
     leadId: id,
@@ -51,6 +55,8 @@ describe("processLead", () => {
       displayName: "X",
       autoFollowupEnabled: true,
       nextActionAt: new Date(),
+      workerId: CFG.workerId,
+      leaseExpiresAt: new Date(Date.now() + CFG.leaseMs),
     });
     // No socialIdentity written — redId will be missing
     const r = await processLead(services, (await services.store.getLead("l2"))!, CFG, new Date());

@@ -36,7 +36,18 @@ export async function runHandoffRecoveryWorkflow(
   );
 
   return {
-    recoverySummary: String(result.recoverySummary ?? ""),
+    recoverySummary: asText(result.recoverySummary),
     artifact,
   };
+}
+
+/** 把 LLM 返回的 recoverySummary 安全转成文本：字符串原样；对象/数组 JSON 化(避免 "[object Object]")；空值转空串。 */
+function asText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value == null) return "";
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
 }

@@ -273,6 +273,9 @@ describe("api app", () => {
     const lead = await services.store.getLead("lx");
     expect(lead?.workerId).toBe("worker_crashed_demo");
     expect(lead?.leaseExpiresAt!.getTime()).toBeLessThan(Date.now());
+    // 崩溃后必须可被 claimDueLeads 重新认领，否则真 worker 不会接管、handoff 不触发
+    expect(lead?.autoFollowupEnabled).toBe(true);
+    expect(lead?.nextActionAt!.getTime()).toBeLessThanOrEqual(Date.now());
   });
 
   it("simulate-crash 对非 contacting 线索返回 400", async () => {

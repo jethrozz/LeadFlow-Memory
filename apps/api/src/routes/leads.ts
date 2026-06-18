@@ -206,9 +206,13 @@ export function leadsRoutes(services: ApiServices) {
         400,
       );
     }
+    // 关键：除了置假 workerId + 过期租约，还要确保线索可被 claimDueLeads 认领
+    // （autoFollowupEnabled=true 且 nextActionAt<=now），否则真 worker 永不接管、handoff 不触发。
     await services.store.updateLeadFollowupState(leadId, {
       workerId: "worker_crashed_demo",
       leaseExpiresAt: new Date(Date.now() - 1000),
+      autoFollowupEnabled: true,
+      nextActionAt: new Date(Date.now() - 1000),
     });
     const after = await services.store.getLead(leadId);
     return c.json({ leadId, simulated: true, status: after?.status, workerId: after?.workerId });

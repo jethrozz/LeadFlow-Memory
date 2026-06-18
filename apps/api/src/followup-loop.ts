@@ -84,10 +84,14 @@ export async function processLead(
   prevWorkerId: string | null = null,
 ): Promise<ProcessResult> {
   const backoff = () =>
-    services.store.updateLeadFollowupState(lead.id, {
-      nextActionAt: new Date(now.getTime() + cfg.intervalMs),
-      ...leasePatch(cfg, now, new Date(now.getTime() + cfg.intervalMs)),
-    });
+    services.store.updateLeadFollowupState(
+      lead.id,
+      {
+        nextActionAt: new Date(now.getTime() + cfg.intervalMs),
+        ...leasePatch(cfg, now, new Date(now.getTime() + cfg.intervalMs)),
+      },
+      { expectedWorkerId: cfg.workerId },
+    );
 
   // Resolve identity
   const identity = await services.store.getSocialIdentity(lead.id);
@@ -166,12 +170,16 @@ export async function processLead(
       now,
     });
     await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, xhsUsername, message: conv.message });
-    await services.store.updateLeadFollowupState(lead.id, {
-      status: decision.nextStatus,
-      nextActionAt: decision.nextActionAt,
-      followupTouchCount: (lead.followupTouchCount ?? 0) + 1,
-      ...leasePatch(cfg, now, decision.nextActionAt),
-    });
+    await services.store.updateLeadFollowupState(
+      lead.id,
+      {
+        status: decision.nextStatus,
+        nextActionAt: decision.nextActionAt,
+        followupTouchCount: (lead.followupTouchCount ?? 0) + 1,
+        ...leasePatch(cfg, now, decision.nextActionAt),
+      },
+      { expectedWorkerId: cfg.workerId },
+    );
     return { sent: true };
   }
 
@@ -196,10 +204,14 @@ export async function processLead(
       intervalMs: cfg.intervalMs,
       now,
     });
-    await services.store.updateLeadFollowupState(lead.id, {
-      nextActionAt: decision.nextActionAt,
-      ...leasePatch(cfg, now, decision.nextActionAt),
-    });
+    await services.store.updateLeadFollowupState(
+      lead.id,
+      {
+        nextActionAt: decision.nextActionAt,
+        ...leasePatch(cfg, now, decision.nextActionAt),
+      },
+      { expectedWorkerId: cfg.workerId },
+    );
     return { sent: false };
   }
 
@@ -228,12 +240,16 @@ export async function processLead(
     await sendFollowup(services, { leadId: lead.id, deviceId, xhsUserId, xhsUsername, message: conv.message });
     sent = true;
   }
-  await services.store.updateLeadFollowupState(lead.id, {
-    status: decision.nextStatus,
-    nextActionAt: decision.nextActionAt,
-    followupTouchCount: (lead.followupTouchCount ?? 0) + (sent ? 1 : 0),
-    ...leasePatch(cfg, now, decision.nextActionAt),
-  });
+  await services.store.updateLeadFollowupState(
+    lead.id,
+    {
+      status: decision.nextStatus,
+      nextActionAt: decision.nextActionAt,
+      followupTouchCount: (lead.followupTouchCount ?? 0) + (sent ? 1 : 0),
+      ...leasePatch(cfg, now, decision.nextActionAt),
+    },
+    { expectedWorkerId: cfg.workerId },
+  );
   return { sent };
 }
 
