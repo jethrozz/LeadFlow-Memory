@@ -1,214 +1,214 @@
 # LeadFlow Memory
 
-面向房产销售（及其他社媒获客场景）的**可验证长期记忆系统**。它把两个 Agent 串起来，并由三层存储支撑：
+A **verifiable long-term memory system** for real-estate (and other social-media lead-gen) sales. It chains two agents, backed by three storage layers:
 
-- **发现 Agent（Lead Discovery）**：在小红书搜索/评论里找到有购买意向的用户，提取画像、生成线索。
-- **转化 Agent（Lead Conversion）**：自动给线索发开场白、轮询客户回复、结合长期记忆多轮跟进，直到达成目标或被拒。
+- **Lead Discovery Agent** — finds users with buying intent on Xiaohongshu (posts/comments), extracts a profile, and creates leads.
+- **Lead Conversion Agent** — automatically sends an opening message, polls for customer replies, and runs multi-touch follow-up grounded in long-term memory until a goal is reached or the customer declines.
 
-### 三层存储分工
+### Three storage layers
 
-| 层 | 技术 | 存什么 |
+| Layer | Tech | What it stores |
 |---|---|---|
-| **业务状态 / 对话原文** | PostgreSQL（Prisma） | 线索、画像、会话逐句记录、时间线、状态机 |
-| **长期语义记忆** | MemWal | 客户已确认的事实（按语义召回，跨会话画像） |
-| **决策存证** | Walrus | 每步决策的不可篡改快照（审计/追责） |
+| **Business state / raw transcript** | PostgreSQL (Prisma) | Leads, profiles, message-by-message conversation, timeline, state machine |
+| **Long-term semantic memory** | MemWal | Confirmed customer facts (recalled by semantic similarity; cross-session profile) |
+| **Decision proof** | Walrus | Immutable snapshot of each decision (audit / accountability) |
 
-> 关键区分：**对话连贯**靠 Postgres 的对话历史（喂给 LLM）；**长期画像**靠 MemWal 召回。两者分工，互不替代。
+> Key distinction: **conversation coherence** comes from the Postgres transcript (fed to the LLM); **long-term profile** comes from MemWal recall. They are complementary, not interchangeable.
 
 ---
 
-## 目录结构
+## Repository layout
 
 ```
 LeadFlow-Memory/
 ├── apps/
-│   ├── api/            # 后端 API（Hono）+ 定时调度 + 自动跟进循环
-│   └── web/            # 前端看板（React + Vite）
+│   ├── api/            # Backend API (Hono) + scheduler + auto follow-up loop
+│   └── web/            # Dashboard frontend (React + Vite)
 ├── packages/
-│   ├── agents/         # 发现 / 转化 工作流（含提示词、outcome 判定）
-│   ├── connectors/     # 小红书连接器：xhs-discovery（采集）/ xhs-chat（私信，进程内 Midscene 驱动 ADB）
-│   ├── llm/            # LLM provider（OpenAI 兼容）
-│   ├── memwal/         # MemWal 语义记忆客户端
-│   ├── walrus/         # Walrus 存证客户端
-│   ├── playbook/       # 行业剧本加载（YAML）
-│   ├── core/ db/       # 共享类型与数据库
-├── playbooks/          # 转化剧本（如 real-estate-chongqing.yml）
-├── prisma/             # 数据库 schema 与迁移
-└── docs/               # 架构 / 特性 / 提案文档
+│   ├── agents/         # Discovery / conversion workflows (prompts, outcome judging)
+│   ├── connectors/     # Xiaohongshu connectors: xhs-discovery (scraping) / xhs-chat (DM, in-process Midscene driving ADB)
+│   ├── llm/            # LLM provider (OpenAI-compatible)
+│   ├── memwal/         # MemWal semantic-memory client
+│   ├── walrus/         # Walrus proof client
+│   ├── playbook/       # Industry playbook loader (YAML)
+│   ├── core/ db/       # Shared types & database
+├── playbooks/          # Conversion playbooks (e.g. real-estate-chongqing.yml)
+├── prisma/             # Database schema & migrations
+└── docs/               # Architecture / feature / proposal docs
 ```
 
 ---
 
-## 技术栈
+## Tech stack
 
-- **Monorepo**：pnpm workspace
-- **后端**：TypeScript (ESM) + Hono + Prisma + PostgreSQL
-- **前端**：React + Vite
-- **LLM**：OpenAI 兼容协议（默认智谱/小米等，可换）
-- **设备自动化**：[Midscene](https://midscenejs.com) `@midscene/android` + ADB（真机操作小红书 App）
-- **测试**：vitest
+- **Monorepo**: pnpm workspace
+- **Backend**: TypeScript (ESM) + Hono + Prisma + PostgreSQL
+- **Frontend**: React + Vite
+- **LLM**: OpenAI-compatible protocol (provider is configurable)
+- **Device automation**: [Midscene](https://midscenejs.com) `@midscene/android` + ADB (drives the real Xiaohongshu app on a phone)
+- **Testing**: vitest
 
 ---
 
-## 快速开始
+## Quick start
 
-### 1. 前置条件
+### 1. Prerequisites
 
-- Node.js ≥ 20、pnpm
-- 一个 PostgreSQL（本地或 Supabase 等云托管）
-- 真机联调需要：Android 手机 + ADB + 已登录小红书 App + 一个支持视觉的多模态模型 key（如阿里云百炼 `qwen3-vl-plus`）
+- Node.js ≥ 20, pnpm
+- A PostgreSQL instance (local or hosted, e.g. Supabase)
+- For real-device runs: an Android phone + ADB + Xiaohongshu app logged in + a **vision-capable multimodal model** key (e.g. Alibaba DashScope `qwen3-vl-plus`)
 
-### 2. 安装
+### 2. Install
 
 ```bash
 pnpm install
 ```
 
-### 3. 配置环境变量
+### 3. Configure environment
 
-在仓库根目录建 `.env`（已在 `.gitignore`）。最小可跑（fake 模式，不连真实服务）：
+Create `.env` at the repo root (it is in `.gitignore`). Minimal "fake" setup (no real services, in-memory stubs — good for running the logic locally):
 
 ```bash
-# fake 模式：不连真实 LLM/记忆/设备，用内存桩，便于本地跑通逻辑
+# fake mode: no real LLM/memory/device, uses stubs
 LLM_PROVIDER=fake
 MEMWAL_MODE=fake
 WALRUS_MODE=fake
 XHS_CHAT_MODE=fake
 ```
 
-真实模式见下方 [环境变量](#环境变量) 完整清单。
+For real mode, see the full [Environment variables](#environment-variables) list below.
 
-### 4. 初始化数据库
+### 4. Initialize the database
 
 ```bash
 npx prisma migrate deploy --schema prisma/schema.prisma
 npx prisma generate --schema prisma/schema.prisma
 ```
 
-### 5. 启动
+### 5. Run
 
 ```bash
-# 后端 API（默认 http://127.0.0.1:3001）
-pnpm --filter @leadflow/api dev      # watch 模式（改文件自动重启，调试自动循环时慎用，见下方注意）
-# 或单实例（推荐做真机/循环调试时用，可控、不自动重启）：
+# Backend API (defaults to http://127.0.0.1:3001)
+pnpm --filter @leadflow/api dev      # watch mode (auto-restarts on file change — avoid during loop/device debugging, see note)
+# Or single instance (recommended for device/loop debugging — controlled, no auto-restart):
 node_modules/.bin/tsx --env-file=.env apps/api/src/index.ts
 
-# 前端看板
+# Dashboard frontend
 pnpm --filter @leadflow/web dev
 ```
 
-> ⚠️ **真机调试时不要用 watch（`pnpm dev`）模式**：改文件会自动重启，自动跟进循环会跟着重启并重新操作手机，容易出现重复发送、难以排查。改用上面的单实例命令。
+> ⚠️ **Do not use watch mode (`pnpm dev`) during device debugging.** Editing files auto-restarts the server, which restarts the auto follow-up loop and re-drives the phone — causing duplicate sends and hard-to-trace behavior. Use the single-instance command above instead.
 
 ---
 
-## 环境变量
+## Environment variables
 
-| 变量 | 说明 |
+| Variable | Description |
 |---|---|
-| `DATABASE_URL` / `DIRECT_URL` | PostgreSQL 连接串（pooler / 直连） |
-| `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | 对话/抽取用 LLM（OpenAI 兼容）。`LLM_PROVIDER=fake` 用桩 |
-| `MEMWAL_BASE_URL` / `MEMWAL_SERVER_URL` / `MEMWAL_DELEGATE_KEY` / `MEMWAL_ACCOUNT_ID` | MemWal 语义记忆。`MEMWAL_MODE=fake` 用桩 |
-| `WALRUS_PUBLISHER_URL` / `WALRUS_AGGREGATOR_URL` | Walrus 存证（测试网公共端点）。`WALRUS_MODE=fake` 用桩 |
-| `XHS_DISCOVERY_MCP_URL` | 小红书采集 MCP 地址（xiaohongshu-mcp，默认 `http://localhost:18060/mcp`） |
-| `XHS_DISCOVERY_DELAY_MS` | 采集相邻工具调用间隔（防风控） |
-| **xhs-chat（私信）** | |
-| `XHS_CHAT_MODE` | `fake`=桩；`mcp`=外部子进程（legacy）；留空=**进程内 Midscene（默认）** |
-| `MIDSCENE_MODEL_NAME` | 视觉模型，如 `qwen3-vl-plus` |
-| `MIDSCENE_MODEL_FAMILY` | 模型家族，如 `qwen3-vl`（阿里云）、`glm-v`（智谱） |
-| `MIDSCENE_MODEL_BASE_URL` / `MIDSCENE_MODEL_API_KEY` | 视觉模型端点与 key（如阿里云百炼 `https://dashscope.aliyuncs.com/compatible-mode/v1`） |
-| **自动跟进循环** | |
-| `AUTO_FOLLOWUP_ENABLED` | `true` 才启动定时跟进循环 |
-| `AUTO_FOLLOWUP_INTERVAL_MS` | tick 间隔（也是单条线索的轮询节奏），默认 60000 |
-| `AUTO_FOLLOWUP_DEVICE_ID` | 默认发送设备的 ADB serial（如 `b759b4fa`），留空则取首个 connected 设备 |
-| `AUTO_FOLLOWUP_BATCH_SIZE` / `_DAILY_CAP` / `_MAX_TOUCHES` / `_SEND_MIN_MS` / `_SEND_MAX_MS` | 护栏：每轮处理上限 / 每日发送上限 / 单线索发送上限 / 发送节流 |
-| `CONVERSION_PLAYBOOK_ID` | campaign 未指定剧本时的兜底剧本（默认 `real-estate-chongqing`） |
+| `DATABASE_URL` / `DIRECT_URL` | PostgreSQL connection strings (pooler / direct) |
+| `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | LLM for chat/extraction (OpenAI-compatible). `LLM_PROVIDER=fake` uses a stub |
+| `MEMWAL_BASE_URL` / `MEMWAL_SERVER_URL` / `MEMWAL_DELEGATE_KEY` / `MEMWAL_ACCOUNT_ID` | MemWal semantic memory. `MEMWAL_MODE=fake` uses a stub |
+| `WALRUS_PUBLISHER_URL` / `WALRUS_AGGREGATOR_URL` | Walrus proof storage (testnet public endpoints). `WALRUS_MODE=fake` uses a stub |
+| `XHS_DISCOVERY_MCP_URL` | Xiaohongshu scraping MCP URL (xiaohongshu-mcp, default `http://localhost:18060/mcp`) |
+| `XHS_DISCOVERY_DELAY_MS` | Delay between scraping tool calls (anti rate-limit) |
+| **xhs-chat (DM)** | |
+| `XHS_CHAT_MODE` | `fake`=stub; `mcp`=external subprocess (legacy); empty=**in-process Midscene (default)** |
+| `MIDSCENE_MODEL_NAME` | Vision model, e.g. `qwen3-vl-plus` |
+| `MIDSCENE_MODEL_FAMILY` | Model family, e.g. `qwen3-vl` (Alibaba), `glm-v` (Zhipu) |
+| `MIDSCENE_MODEL_BASE_URL` / `MIDSCENE_MODEL_API_KEY` | Vision model endpoint & key (e.g. DashScope `https://dashscope.aliyuncs.com/compatible-mode/v1`) |
+| **Auto follow-up loop** | |
+| `AUTO_FOLLOWUP_ENABLED` | Must be `true` to start the timed follow-up loop |
+| `AUTO_FOLLOWUP_INTERVAL_MS` | Tick interval (also the per-lead polling cadence), default 60000 |
+| `AUTO_FOLLOWUP_DEVICE_ID` | Default sending device ADB serial (e.g. `b759b4fa`); empty = first connected device |
+| `AUTO_FOLLOWUP_BATCH_SIZE` / `_DAILY_CAP` / `_MAX_TOUCHES` / `_SEND_MIN_MS` / `_SEND_MAX_MS` | Guardrails: per-tick limit / daily send cap / per-lead send cap / send throttle |
+| `CONVERSION_PLAYBOOK_ID` | Fallback playbook when a campaign specifies none (default `real-estate-chongqing`) |
 
-> 视觉模型**必须支持图片输入（VL）**，纯文本模型（如 `qwen-plus`）无法做屏幕定位。
+> The vision model **must accept image input (VL)**. Text-only models (e.g. `qwen-plus`) cannot do on-screen grounding.
 
 ---
 
-## 核心流程
+## Core flows
 
-### A. 发现线索（Discovery）
+### A. Lead discovery
 
 ```bash
-# 触发某 campaign 的采集（需要 xiaohongshu-mcp 已运行且登录）
+# Trigger scraping for a campaign (requires xiaohongshu-mcp running and logged in)
 curl -X POST http://127.0.0.1:3001/api/workflows/discovery/run \
   -H "content-type: application/json" \
   -d '{"campaignId":"<id>","seedKeywords":["渝北 三房"]}'
 ```
 
-发现的线索自动入列自动跟进（`autoFollowupEnabled=true`）。
+Discovered leads are auto-enqueued for follow-up (`autoFollowupEnabled=true`).
 
-### B. 自动转化跟进（Conversion，定时任务）
+### B. Automated conversion follow-up (timed loop)
 
-设 `AUTO_FOLLOWUP_ENABLED=true` 启动 API 后，定时循环会自动：
+With `AUTO_FOLLOWUP_ENABLED=true`, after the API starts the loop runs automatically:
 
 ```
-发现/入列线索(discovered)
-  → 定时 tick 捞到 → 生成开场白(用画像) → 真机发送 → 状态转 contacting
-  → 每隔 interval 轮询客户是否回复
-  → 有回复：读会话 + 召回长期记忆 + 最近对话历史 → 生成回复 → 判 outcome
-       continue→继续 / goal_reached→converted / rejected→lost / 超 maxTouches→paused
+discovered / enqueued lead
+  → tick picks it up → generate opening (from profile) → send via device → status: contacting
+  → poll for replies every interval
+  → on reply: read conversation + recall long-term memory + recent transcript → generate reply → judge outcome
+       continue→stay / goal_reached→converted / rejected→lost / over maxTouches→paused
 ```
 
-**手动把指定线索丢进流水线**（交给定时循环接管，不在请求内执行）：
+**Enqueue a specific lead into the pipeline** (handed off to the timed loop, not executed in-request):
 
 ```bash
 curl -X POST http://127.0.0.1:3001/api/leads/<leadId>/start-followup
 ```
 
-**造一条测试线索**（含小红书号、画像、写入 MemWal/Walrus）：
+**Create a test lead** (with Xiaohongshu id, profile, MemWal/Walrus writes):
 
 ```bash
 curl -X POST http://127.0.0.1:3001/api/leads/mock \
   -H "content-type: application/json" \
-  -d '{"displayName":"昵称","redId":"小红书号","summary":"渝北三房预算130万",
-       "sourceText":"求推荐渝北三房，预算130万以内","fields":{"budget":"130万以内","district":"渝北"}}'
+  -d '{"displayName":"name","redId":"xhs_id","summary":"3BR in Yubei, budget 1.3M",
+       "sourceText":"Looking for a 3BR in Yubei under 1.3M","fields":{"budget":"<1.3M","district":"Yubei"}}'
 ```
 
 ---
 
-## 主要 API
+## Main API
 
-| 方法 / 路径 | 作用 |
+| Method / Path | Purpose |
 |---|---|
-| `POST /api/leads/mock` | 造测试线索（写 lead/profile/记忆/存证/身份） |
-| `POST /api/leads/:leadId/start-followup` | 把线索入列自动跟进（秒回，交给定时循环） |
-| `GET  /api/leads/:leadId` | 线索详情 |
-| `GET  /api/leads/:leadId/conversation` | 拉取逐句对话记录 |
-| `POST /api/leads/:leadId/conversation/customer-reply` | 人工录入一条客户回复（调试用） |
-| `POST /api/workflows/discovery/run` | 触发采集 |
-| `POST /api/workflows/conversion/run` | 手动跑一次转化（需 customerMessage） |
-| `GET  /api/dashboard/leads` | 看板线索列表 |
-| `GET  /api/devices/...` | 设备 / 登录状态 |
+| `POST /api/leads/mock` | Create a test lead (writes lead/profile/memory/proof/identity) |
+| `POST /api/leads/:leadId/start-followup` | Enqueue a lead for auto follow-up (returns immediately, loop takes over) |
+| `GET  /api/leads/:leadId` | Lead detail |
+| `GET  /api/leads/:leadId/conversation` | Fetch message-by-message transcript |
+| `POST /api/leads/:leadId/conversation/customer-reply` | Manually inject a customer reply (debugging) |
+| `POST /api/workflows/discovery/run` | Trigger scraping |
+| `POST /api/workflows/conversion/run` | Run one conversion turn manually (requires customerMessage) |
+| `GET  /api/dashboard/leads` | Dashboard lead list |
+| `GET  /api/devices/...` | Device / login status |
 
 ---
 
-## 剧本（Playbook）
+## Playbooks
 
-转化 Agent 的**系统提示词来自剧本**（`playbooks/*.yml`），而非内置默认词。剧本定义角色、语气、目标、对话规则、禁止事项、画像字段、本地知识。campaign 未指定时回退到 `CONVERSION_PLAYBOOK_ID`（默认 `real-estate-chongqing`）。
+The conversion agent's **system prompt comes from a playbook** (`playbooks/*.yml`), not hardcoded defaults. A playbook defines role, tone, goals, conversation rules, forbidden claims, profile fields, and local knowledge. When a campaign specifies none, it falls back to `CONVERSION_PLAYBOOK_ID` (default `real-estate-chongqing`).
 
-跨剧本通用的基线约束（短回复、被拒退让、记忆只写已确认事实）在代码中始终叠加。
+Cross-playbook baseline constraints (short replies, back off when declined, memory writes only confirmed facts) are always layered in by the code.
 
 ---
 
-## 测试
+## Testing
 
 ```bash
-pnpm -r test          # 全部包单测
-pnpm typecheck        # 全部类型检查
-pnpm --filter @leadflow/api test   # 单个包
+pnpm -r test          # all package unit tests
+pnpm typecheck        # all type checks
+pnpm --filter @leadflow/api test   # a single package
 ```
 
-`XHS_CHAT_MODE=fake` 等桩模式下可在无真机/无外部服务时跑通主流程。
+Stub modes (`XHS_CHAT_MODE=fake`, etc.) let you run the main flow without a real device or external services.
 
 ---
 
-## 已知限制 / 说明
+## Known limitations / notes
 
-- **设备自动化靠视觉模型**，存在不确定性；发送流程已加入「输入校验 + 发送后校验输入框清空 + 重试只重点发送不重打字」防重复，会话同步按**内容去重**避免把自己发的消息当成客户回复。
-- **暂无真实房源/楼盘库**：客户问具体小区名时 Agent 只能自然兜底（"整理资料发您"），接入知识库后可报具体楼盘。
-- **单进程 MVP**：自动跟进循环未做多 worker 加锁；每日计数为进程内内存（重启清零）。
-- 真机私信依赖设备已登录小红书；登录失效时发送会失败。
+- **Device automation relies on a vision model** and is inherently non-deterministic. The send flow includes "verify text entered + verify the input box clears after sending + retry only re-taps send (never re-types)" to prevent duplicates, and conversation sync deduplicates **by content** to avoid treating the agent's own messages as customer replies.
+- **No real property/listing database yet**: when a customer asks for a specific community name, the agent can only defer gracefully ("I'll send you the details"). Wiring a knowledge base would enable concrete listings.
+- **Single-process MVP**: the follow-up loop has no multi-worker locking; the daily counter is in-process memory (resets on restart).
+- Real-device DMs require the device to be logged into Xiaohongshu; sends fail if the session expires.
 ```
