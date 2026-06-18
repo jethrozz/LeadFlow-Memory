@@ -95,13 +95,14 @@ describe("LeadFlow Dashboard", () => {
 
   it("renders the prototype layout bound to real lead data", async () => {
     render(<App />);
-    await waitFor(() =>
-      expect(screen.getByRole("heading", { name: "重庆买房小陈" })).toBeInTheDocument(),
-    );
+    // Wait for both list (heading) and detail (budget field) to load
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "重庆买房小陈" })).toBeInTheDocument();
+      expect(screen.getByText("130万以内")).toBeInTheDocument();
+    });
 
     // 工作台外壳与画像
     expect(screen.getByText("房产销售 Agent 工作台")).toBeInTheDocument();
-    expect(screen.getByText("130万以内")).toBeInTheDocument();
     expect(screen.getByText("想在渝北附近买个三房。")).toBeInTheDocument();
     expect(screen.getByText("预算最好 130 万以内，孩子明年上小学。")).toBeInTheDocument();
 
