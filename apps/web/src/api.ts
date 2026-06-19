@@ -45,3 +45,16 @@ export async function simulateCrash(leadId: string) {
   if (!response.ok) throw new Error(`simulate-crash failed: ${response.status}`);
   return response.json();
 }
+
+export async function fetchActiveDevice(): Promise<{ deviceId: string } | null> {
+  const json = await requestJson<{ devices: Array<{ deviceId: string }> }>("/api/devices/xhs");
+  return json.devices[0] ?? null;
+}
+
+export async function fetchDeviceScreenshot(
+  deviceId: string,
+): Promise<{ imageDataUrl: string; capturedAt: string }> {
+  return requestJson<{ imageDataUrl: string; capturedAt: string }>(
+    `/api/devices/${deviceId}/screenshot`,
+  );
+}
