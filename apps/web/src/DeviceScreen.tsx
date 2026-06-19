@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchActiveDevice, fetchDeviceScreenshot } from "./api";
+import { useI18n } from "./i18n";
 
 const POLL_MS = 700;
 const FAIL_THRESHOLD = 5;
@@ -7,6 +8,7 @@ const FAIL_THRESHOLD = 5;
 type ScreenStatus = "connecting" | "live" | "no-device" | "stalled";
 
 export function DeviceScreen() {
+  const { t } = useI18n();
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [frame, setFrame] = useState<string | null>(null);
   const [capturedAt, setCapturedAt] = useState<string | null>(null);
@@ -74,20 +76,20 @@ export function DeviceScreen() {
   return (
     <div className="device-screen">
       <div className="device-screen-head">
-        <span className="device-title">实时画面</span>
+        <span className="device-title">{t("deviceTitle")}</span>
         <span className={`device-live device-live-${status}`}>
           {status === "live" && <>● LIVE {time}</>}
-          {status === "connecting" && "连接中…"}
-          {status === "no-device" && "设备未连接"}
-          {status === "stalled" && "画面已暂停"}
+          {status === "connecting" && t("deviceConnecting")}
+          {status === "no-device" && t("deviceNoDevice")}
+          {status === "stalled" && t("deviceStalled")}
         </span>
       </div>
       <div className="device-frame">
         {frame ? (
-          <img className="device-img" src={frame} alt="设备实时画面" />
+          <img className="device-img" src={frame} alt={t("deviceTitle")} />
         ) : (
           <div className="device-placeholder">
-            {status === "no-device" ? "等待 Agent 启动会话" : "等待首帧…"}
+            {status === "no-device" ? t("deviceWaitSession") : t("deviceWaitFrame")}
           </div>
         )}
       </div>

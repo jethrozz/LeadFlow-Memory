@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { LanguageProvider } from "./i18n";
 
 const leadListResponse = {
   items: [
@@ -81,7 +82,12 @@ const leadDetailResponse = {
 };
 
 describe("LeadFlow Dashboard", () => {
+  afterEach(() => {
+    cleanup(); // 卸载上个用例的 DOM，避免多个 <App /> 并存导致文案重复匹配
+  });
+
   beforeEach(() => {
+    window.localStorage.clear(); // 语言偏好持久化在 localStorage，避免用例间串味
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string) => {
@@ -111,7 +117,7 @@ describe("LeadFlow Dashboard", () => {
     });
 
     // 工作台外壳与画像
-    expect(screen.getByText("房产销售 Agent 工作台")).toBeInTheDocument();
+    expect(screen.getByText("转化 Agent 工作台")).toBeInTheDocument();
     expect(screen.getByText("想在渝北附近买个三房。")).toBeInTheDocument();
     expect(screen.getByText("预算最好 130 万以内，孩子明年上小学。")).toBeInTheDocument();
 
@@ -120,13 +126,30 @@ describe("LeadFlow Dashboard", () => {
     expect(screen.getByText("接力恢复")).toBeInTheDocument();
     // 会话状态条
     expect(screen.getByText(/正在跟进/)).toBeInTheDocument();
-    // 实时画面栏
-    expect(screen.getByText("实时画面")).toBeInTheDocument();
+    // 设备实况栏
+    expect(screen.getByText("设备实况")).toBeInTheDocument();
 
     // 下一步跟进话术 + 操作按钮
     expect(screen.getByText(/渝北三房重新筛了一版/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "加入跟进" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "模拟崩溃" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "手动发" })).toBeInTheDocument();
+  });
+
+  it("切换语言后 UI 文案变英文", async () => {
+    render(
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("转化 Agent 工作台")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "切换语言 / Switch language" }));
+
+    expect(screen.getByText("Conversion Agent Workbench")).toBeInTheDocument();
+    expect(screen.getByText("Device Live")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start follow-up" })).toBeInTheDocument();
   });
 });
