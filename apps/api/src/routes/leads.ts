@@ -36,9 +36,20 @@ export function leadsRoutes(services: ApiServices) {
     return c.json({ lead });
   });
 
-  // 手动新增模拟线索（方便测试）
+  // 删除线索及其全部关联数据。
+  route.delete("/:leadId", async (c) => {
+    const leadId = c.req.param("leadId");
+    const lead = await services.store.getLead(leadId);
+    if (!lead) {
+      return c.json({ error: { code: "LEAD_NOT_FOUND" } }, 404);
+    }
+    await services.store.deleteLead(leadId);
+    return c.json({ leadId, deleted: true });
+  });
+
+  // 手动新增模拟线索（方便测试）。按约定：只允许生成 jethrozz 的线索。
   const MockLeadBodySchema = z.object({
-    displayName: z.string().min(1),         // 小红书昵称
+    displayName: z.string().min(1).default("jethrozz"), // 小红书昵称，省略默认 jethrozz
     redId: z.string().min(1),               // 小红书号（必填）
     platform: z.string().default("xhs"),
     summary: z.string().default(""),
@@ -52,6 +63,13 @@ export function leadsRoutes(services: ApiServices) {
 
   route.post("/mock", async (c) => {
     const body = MockLeadBodySchema.parse(await c.req.json());
+    // 只允许生成 jethrozz 的线索：显式传了别的昵称就拒绝。
+    if (body.displayName !== "jethrozz") {
+      return c.json(
+        { error: { code: "ONLY_JETHROZZ_ALLOWED", message: "mock 线索只允许生成 jethrozz" } },
+        400,
+      );
+    }
     const leadId = `lead_mock_${randomUUID().slice(0, 8)}`;
     const memorySpaceId = `space_${leadId}`;
 

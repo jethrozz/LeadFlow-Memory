@@ -1,4 +1,13 @@
 import { useState } from "react";
+import { useI18n } from "./i18n.js";
+
+// 线索状态筛选项：用稳定 key 驱动选中态，文案随语言切换。
+const leadFilters = [
+  { key: "filter_new", active: false },
+  { key: "filter_following", active: false },
+  { key: "filter_replied", active: false },
+  { key: "filter_handoff", active: true },
+];
 
 const leads = [
   {
@@ -128,6 +137,7 @@ const traceRows = [
 ];
 
 function App() {
+  const { t, lang, setLang } = useI18n();
   const [activeLeadId, setActiveLeadId] = useState(leads[0].id);
   const [activeEventKey, setActiveEventKey] = useState("handoff");
   const [activeTab, setActiveTab] = useState("artifacts");
@@ -141,24 +151,24 @@ function App() {
         <div className="brand-block">
           <div className="brand-mark">LF</div>
           <div>
-            <p className="eyebrow">Walrus 赛道 Demo</p>
+            <p className="eyebrow">{t("eyebrowDemo")}</p>
             <h1>LeadFlow Memory</h1>
           </div>
         </div>
 
         <section className="lead-section">
           <div className="section-heading">
-            <span>房产线索</span>
-            <strong>3 条活跃</strong>
+            <span>{t("leadsTitle")}</span>
+            <strong>{t("leadsCount")}</strong>
           </div>
-          <div className="lead-tabs" aria-label="线索状态筛选">
-            {["新线索", "跟进中", "已回复", "接力中"].map((item) => (
+          <div className="lead-tabs" aria-label={t("leadFilterAria")}>
+            {leadFilters.map((item) => (
               <button
-                className={item === "接力中" ? "filter-pill active" : "filter-pill"}
-                key={item}
+                className={item.active ? "filter-pill active" : "filter-pill"}
+                key={item.key}
                 type="button"
               >
-                {item}
+                {t(item.key)}
               </button>
             ))}
           </div>
@@ -185,14 +195,14 @@ function App() {
         </section>
 
         <section className="data-layer">
-          <p className="section-kicker">数据层状态</p>
+          <p className="section-kicker">{t("dataLayer")}</p>
           <div className="layer-row">
-            <span>MemWal 记忆读取</span>
-            <strong>运行中</strong>
+            <span>{t("memwalRead")}</span>
+            <strong>{t("running")}</strong>
           </div>
           <div className="layer-row">
-            <span>Walrus Artifacts</span>
-            <strong>5 个已验证</strong>
+            <span>{t("walrusArtifacts")}</span>
+            <strong>{t("verifiedCount")}</strong>
           </div>
         </section>
       </aside>
@@ -200,13 +210,20 @@ function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">从线索发现到客户转化的可携带长期记忆</p>
-            <h2>房产销售 Agent 工作台</h2>
+            <p className="eyebrow">{t("topEyebrow")}</p>
+            <h2>{t("workbenchTitle")}</h2>
           </div>
           <div className="status-cluster">
-            <span className="verified-dot">可信数据层已验证</span>
+            <button
+              className="lang-toggle"
+              type="button"
+              onClick={() => setLang(lang === "zh" ? "en" : "zh")}
+            >
+              {lang === "zh" ? "EN" : "中文"}
+            </button>
+            <span className="verified-dot">{t("verifiedLayer")}</span>
             <button className="primary-action" type="button" onClick={() => setActiveEventKey("handoff")}>
-              回放接力恢复
+              {t("replayHandoff")}
             </button>
           </div>
         </header>
@@ -215,23 +232,23 @@ function App() {
           <section className="lead-profile panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">当前线索</p>
+                <p className="eyebrow">{t("currentLead")}</p>
                 <h3>{activeLead.name}</h3>
               </div>
-              <span className="intent-badge">意向 {activeLead.score}</span>
+              <span className="intent-badge">{t("intent")} {activeLead.score}</span>
             </div>
 
             <div className="requirement-grid">
               <div>
-                <span>预算</span>
+                <span>{t("budget")}</span>
                 <strong>{activeLead.budget}</strong>
               </div>
               <div>
-                <span>区域</span>
+                <span>{t("area")}</span>
                 <strong>{activeLead.location}</strong>
               </div>
               <div>
-                <span>阶段</span>
+                <span>{t("stage")}</span>
                 <strong>{activeLead.stage}</strong>
               </div>
             </div>
@@ -243,12 +260,12 @@ function App() {
             </div>
 
             <div className="source-note">
-              <p className="section-kicker">来源信号</p>
+              <p className="section-kicker">{t("sourceSignal")}</p>
               <p>{activeLead.sourceNote}</p>
             </div>
 
             <div className="customer-reply">
-              <p className="section-kicker">最近客户回复</p>
+              <p className="section-kicker">{t("latestReply")}</p>
               <blockquote>{activeLead.lastReply}</blockquote>
             </div>
           </section>
@@ -256,10 +273,10 @@ function App() {
           <section className="timeline-panel panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">记忆时间线</p>
-                <h3>从线索发现到接力恢复</h3>
+                <p className="eyebrow">{t("memoryTimeline")}</p>
+                <h3>{t("timelineSubtitle")}</h3>
               </div>
-              <span className="small-proof">Walrus 证明链完整</span>
+              <span className="small-proof">{t("proofChain")}</span>
             </div>
 
             <div className="timeline">
@@ -280,7 +297,7 @@ function App() {
 
             <div className="event-detail">
               <div>
-                <p className="section-kicker">当前事件</p>
+                <p className="section-kicker">{t("currentEvent")}</p>
                 <h4>{activeEvent.label}</h4>
                 <p>{activeEvent.summary}</p>
               </div>
@@ -294,10 +311,10 @@ function App() {
           <section className="follow-up panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">下一步最佳跟进</p>
+                <p className="eyebrow">{t("bestFollowup")}</p>
                 <h3>{activeLead.worker}</h3>
               </div>
-              <span className="handoff-badge">已恢复</span>
+              <span className="handoff-badge">{t("recovered")}</span>
             </div>
             <div className="message-preview">
               <p>
@@ -306,22 +323,22 @@ function App() {
               </p>
             </div>
             <div className="used-memory">
-              <p className="section-kicker">本次使用的记忆</p>
+              <p className="section-kicker">{t("usedMemory")}</p>
               <div className="chips compact">
-                <span>预算上限</span>
-                <span>学区优先</span>
-                <span>近地铁</span>
-                <span>三房</span>
+                <span>{t("chip_budgetCap")}</span>
+                <span>{t("chip_school")}</span>
+                <span>{t("chip_metro")}</span>
+                <span>{t("chip_threeRoom")}</span>
               </div>
             </div>
           </section>
 
           <section className="inspector panel">
-            <div className="tab-row" role="tablist" aria-label="Inspector 标签">
+            <div className="tab-row" role="tablist" aria-label={t("inspectorAria")}>
               {[
-                ["memory", "MemWal 记忆"],
-                ["artifacts", "Walrus Artifacts"],
-                ["trace", "Agent Trace"],
+                ["memory", t("tab_memory")],
+                ["artifacts", t("tab_artifacts")],
+                ["trace", t("tab_trace")],
               ].map(([key, label]) => (
                 <button
                   className={activeTab === key ? "tab active" : "tab"}
@@ -337,11 +354,11 @@ function App() {
             {activeTab === "memory" && (
               <div className="memory-grid">
                 {[
-                  ["预算", "130 万以内"],
-                  ["区域", "高新区"],
-                  ["优先级", "学区 + 地铁"],
-                  ["顾虑", "通勤和价格压力"],
-                  ["下一步策略", "优先推荐总价可控的学区友好小区"],
+                  [t("mem_budget"), "130 万以内"],
+                  [t("mem_area"), "高新区"],
+                  [t("mem_priority"), "学区 + 地铁"],
+                  [t("mem_concern"), "通勤和价格压力"],
+                  [t("mem_strategy"), "优先推荐总价可控的学区友好小区"],
                 ].map(([label, value]) => (
                   <div className="memory-row" key={label}>
                     <span>{label}</span>

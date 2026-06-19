@@ -303,6 +303,24 @@ button {
   padding: 11px 16px;
 }
 
+.lang-toggle {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 750;
+  padding: 9px 14px;
+  transition: 180ms ease;
+}
+
+.lang-toggle:hover {
+  border-color: rgba(11, 143, 138, 0.28);
+  background: #dff5ef;
+  color: var(--teal-strong);
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(330px, 0.82fr) minmax(420px, 1.12fr) minmax(330px, 0.88fr);

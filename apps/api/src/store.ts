@@ -114,6 +114,8 @@ export interface ApiStore {
   upsertLead(lead: StoredLead): Promise<StoredLead>;
   getLead(leadId: string): Promise<StoredLead | undefined>;
   listLeads(): Promise<StoredLead[]>;
+  // 删除线索及其全部关联数据（画像/会话/记忆/artifact/时间线/身份）。返回是否确有删除。
+  deleteLead(leadId: string): Promise<boolean>;
   listActiveFollowupLeads(now: Date, limit: number): Promise<StoredLead[]>;
   claimDueLeads(
     workerId: string,
@@ -249,6 +251,21 @@ export function createMemoryStore(): ApiStore {
     },
     getLead: async (leadId) => leads.get(leadId),
     listLeads: async () => [...leads.values()],
+
+    deleteLead: async (leadId) => {
+      const existed = leads.delete(leadId);
+      memoryRefs.delete(leadId);
+      artifactRefs.delete(leadId);
+      timelineEvents.delete(leadId);
+      conversations.delete(leadId);
+      profiles.delete(leadId);
+      nextFollowups.delete(leadId);
+      socialIdentities.delete(leadId);
+      for (const run of workflowRuns) {
+        if (run.leadId === leadId) run.leadId = null;
+      }
+      return existed;
+    },
 
     listActiveFollowupLeads: async (now, limit) =>
       [...leads.values()]

@@ -101,6 +101,24 @@ export function createPrismaStore(prisma: PrismaClient): ApiStore {
       return rows.map(leadFromPrisma);
     },
 
+    async deleteLead(leadId) {
+      // 按外键依赖顺序删子表，再删 Lead。会话先删消息再删会话；workflowRun 解绑不删。
+      const conv = await prisma.conversation.findUnique({ where: { leadId } });
+      if (conv) {
+        await prisma.conversationMessage.deleteMany({ where: { conversationId: conv.id } });
+        await prisma.conversation.delete({ where: { id: conv.id } });
+      }
+      await prisma.nextFollowup.deleteMany({ where: { leadId } });
+      await prisma.leadProfile.deleteMany({ where: { leadId } });
+      await prisma.memoryRef.deleteMany({ where: { leadId } });
+      await prisma.artifactRef.deleteMany({ where: { leadId } });
+      await prisma.timelineEvent.deleteMany({ where: { leadId } });
+      await prisma.socialIdentity.deleteMany({ where: { leadId } });
+      await prisma.workflowRun.updateMany({ where: { leadId }, data: { leadId: null } });
+      const res = await prisma.lead.deleteMany({ where: { id: leadId } });
+      return res.count > 0;
+    },
+
     async listActiveFollowupLeads(now, limit) {
       const rows = await prisma.lead.findMany({
         where: {
