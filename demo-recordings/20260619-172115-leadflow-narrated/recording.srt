@@ -1,0 +1,49 @@
+1
+00:00:00,800 --> 00:00:08,356
+这里是 LeadFlow Memory 的转化 Agent 工作台。
+This is the LeadFlow Memory conversion agent workbench.
+
+2
+00:00:08,956 --> 00:00:13,623
+选中高意向线索陈薇，调出她的完整客户画像。
+Select high-intent lead Chen Wei and open her full profile.
+
+3
+00:00:14,223 --> 00:00:18,890
+预算、区域、需求和来源信号都来自长期记忆。
+Budget, district, needs and source signals all come from long-term memory.
+
+4
+00:00:19,490 --> 00:00:24,379
+跟进话术由记忆驱动，并标注了本次用到的记忆。
+The follow-up script is memory-driven and cites the memory it used.
+
+5
+00:00:24,979 --> 00:00:30,312
+MemWal 记忆页展示沉淀下来的长期语义记忆。
+The MemWal tab shows the accumulated long-term semantic memory.
+
+6
+00:00:30,912 --> 00:00:35,801
+Walrus 物料页里每一份材料都可被验证。
+On the Walrus tab, every artifact is verifiable.
+
+7
+00:00:36,401 --> 00:00:42,179
+Agent Trace 完整记录了智能体的决策轨迹。
+Agent Trace records the full decision trail of the agent.
+
+8
+00:00:42,779 --> 00:00:47,223
+底部时间线串起从发现到跟进的每一步进度。
+The bottom timeline links every step from discovery to follow-up.
+
+9
+00:00:47,823 --> 00:00:50,490
+界面支持中英文一键切换。
+The interface switches between Chinese and English in one click.
+
+10
+00:00:51,090 --> 00:00:54,201
+记忆让每一次跟进都更懂客户。
+Memory makes every follow-up understand the customer better.

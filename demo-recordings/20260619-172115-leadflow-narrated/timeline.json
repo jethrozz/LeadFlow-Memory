@@ -1,0 +1,107 @@
+{
+  "leadInMs": 800,
+  "gapMs": 600,
+  "totalMs": 52400,
+  "steps": [
+    {
+      "id": "01",
+      "cn": "这里是 LeadFlow Memory 的转化 Agent 工作台。",
+      "en": "This is the LeadFlow Memory conversion agent workbench.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/01.wav",
+      "startMs": 800,
+      "endMs": 4960,
+      "durationMs": 4160,
+      "holdMs": 4760
+    },
+    {
+      "id": "02",
+      "cn": "选中高意向线索陈薇，调出她的完整客户画像。",
+      "en": "Select high-intent lead Chen Wei and open her full profile.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/02.wav",
+      "startMs": 5560,
+      "endMs": 10840,
+      "durationMs": 5280,
+      "holdMs": 5880
+    },
+    {
+      "id": "03",
+      "cn": "预算、区域、需求和来源信号都来自长期记忆。",
+      "en": "Budget, district, needs and source signals all come from long-term memory.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/03.wav",
+      "startMs": 11440,
+      "endMs": 17040,
+      "durationMs": 5600,
+      "holdMs": 6200
+    },
+    {
+      "id": "04",
+      "cn": "跟进话术由记忆驱动，并标注了本次用到的记忆。",
+      "en": "The follow-up script is memory-driven and cites the memory it used.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/04.wav",
+      "startMs": 17640,
+      "endMs": 22760,
+      "durationMs": 5120,
+      "holdMs": 5720
+    },
+    {
+      "id": "05",
+      "cn": "MemWal 记忆页展示沉淀下来的长期语义记忆。",
+      "en": "The MemWal tab shows the accumulated long-term semantic memory.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/05.wav",
+      "startMs": 23360,
+      "endMs": 28320,
+      "durationMs": 4960,
+      "holdMs": 5560
+    },
+    {
+      "id": "06",
+      "cn": "Walrus 物料页里每一份材料都可被验证。",
+      "en": "On the Walrus tab, every artifact is verifiable.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/06.wav",
+      "startMs": 28920,
+      "endMs": 33240,
+      "durationMs": 4320,
+      "holdMs": 4920
+    },
+    {
+      "id": "07",
+      "cn": "Agent Trace 完整记录了智能体的决策轨迹。",
+      "en": "Agent Trace records the full decision trail of the agent.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/07.wav",
+      "startMs": 33840,
+      "endMs": 38000,
+      "durationMs": 4160,
+      "holdMs": 4760
+    },
+    {
+      "id": "08",
+      "cn": "底部时间线串起从发现到跟进的每一步进度。",
+      "en": "The bottom timeline links every step from discovery to follow-up.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/08.wav",
+      "startMs": 38600,
+      "endMs": 43560,
+      "durationMs": 4960,
+      "holdMs": 5560
+    },
+    {
+      "id": "09",
+      "cn": "界面支持中英文一键切换。",
+      "en": "The interface switches between Chinese and English in one click.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/09.wav",
+      "startMs": 44160,
+      "endMs": 47360,
+      "durationMs": 3200,
+      "holdMs": 3800
+    },
+    {
+      "id": "10",
+      "cn": "记忆让每一次跟进都更懂客户。",
+      "en": "Memory makes every follow-up understand the customer better.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-172115-leadflow-narrated/audio/10.wav",
+      "startMs": 47960,
+      "endMs": 51800,
+      "durationMs": 3840,
+      "holdMs": 4440
+    }
+  ]
+}

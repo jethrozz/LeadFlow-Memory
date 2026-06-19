@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { gsap } from "gsap";
 import {
   fetchDashboardLeadDetail,
   fetchDashboardLeads,
@@ -8,7 +9,7 @@ import {
 } from "./api";
 import type { DashboardLeadDetail, DashboardLeadItem } from "./types";
 import { DeviceScreen } from "./DeviceScreen";
-import { TIMELINE_STAGES, leadStageIndex } from "./timeline-stage";
+import { CRASHED_DEMO_WORKER_ID, findCrashRecovery } from "./crash-recovery";
 import { useI18n, type TFunc } from "./i18n";
 import "./styles.css";
 
@@ -31,7 +32,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** 把长 workerId 收成可读短名：worker_192.168.0.100_56443_7668 → Worker-7668。 */
 function shortWorker(id: string | null | undefined, t: TFunc): string {
   if (!id) return t("crashStandbyWorker");
-  if (id === "worker_crashed_demo") return t("crashCrashedWorker");
+  if (id === CRASHED_DEMO_WORKER_ID) return t("crashCrashedWorker");
   const seg = id.split("_").pop();
   return `Worker-${seg ?? id}`;
 }
@@ -51,12 +52,16 @@ export function App() {
   const [leads, setLeads] = useState<DashboardLeadItem[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DashboardLeadDetail | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("followup");
   const [isLoading, setIsLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
   const [crashState, setCrashState] = useState<CrashState | null>(null);
+  const detailPanelRef = useRef<HTMLElement | null>(null);
+  const detailBodyRef = useRef<HTMLDivElement | null>(null);
+  const crashRunIdRef = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -74,18 +79,58 @@ export function App() {
   useEffect(() => {
     if (!selectedLeadId) {
       setDetail(null);
+      setIsDetailLoading(false);
       return;
     }
     let active = true;
-    fetchDashboardLeadDetail(selectedLeadId).then((data) => {
-      if (!active) return;
-      setDetail(data);
-      setActiveEventId(data.timeline.at(-1)?.id ?? null);
-    });
+    setIsDetailLoading(true);
+    fetchDashboardLeadDetail(selectedLeadId)
+      .then((data) => {
+        if (!active) return;
+        setDetail(data);
+        setActiveEventId(data.timeline.at(-1)?.id ?? null);
+        setIsDetailLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setIsDetailLoading(false);
+      });
     return () => {
       active = false;
     };
   }, [selectedLeadId]);
+
+  useEffect(() => {
+    const panel = detailPanelRef.current;
+    const body = detailBodyRef.current;
+    if (!panel || !body || isDetailLoading || !detail || detail.lead.id !== selectedLeadId) return;
+
+    const items = body.querySelectorAll(".detail-anim-item");
+    gsap.killTweensOf(panel);
+    gsap.killTweensOf(items);
+
+    const timeline = gsap.timeline({
+      defaults: { duration: 0.44, ease: "power2.out", overwrite: "auto" },
+    });
+
+    timeline
+      .fromTo(panel, { y: 10 }, { y: 0, clearProps: "transform" })
+      .fromTo(
+        items,
+        { y: 18, autoAlpha: 0 },
+        {
+          y: 0,
+          autoAlpha: 1,
+          stagger: 0.06,
+          clearProps: "transform,opacity,visibility",
+        },
+        "<0.08",
+      );
+
+    return () => {
+      timeline.kill();
+    };
+  }, [detail, isDetailLoading, selectedLeadId]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -116,11 +161,14 @@ export function App() {
   // 模拟崩溃 + 接力动画：点击后播放三幕动画，并真实轮询后端时间线，
   // 等到新的 handoff_recovered 事件后揭晓恢复摘要(动画不是假的，结尾是真实接力结果)。
   async function handleSimulateCrash() {
-    if (!selectedLeadId || !detail) return;
+    if (!selectedLeadId || !currentDetail) return;
     const leadId = selectedLeadId;
-    const prevWorker = detail.lead.workerId ?? "worker";
+    const runId = crashRunIdRef.current + 1;
+    crashRunIdRef.current = runId;
+    const prevWorker = currentDetail.lead.workerId ?? "worker";
+    const crashStartedAtMs = Date.now();
     // 基线：崩溃前最近一次接力恢复的时间戳，之后出现的才算"本次"接力。
-    const baselineTs = detail.timeline
+    const baselineTs = currentDetail.timeline
       .filter((e) => e.type === "handoff_recovered")
       .reduce((max, e) => Math.max(max, new Date(e.createdAt).getTime()), 0);
 
@@ -136,6 +184,7 @@ export function App() {
     }
 
     await sleep(1800); // 崩溃动画
+    if (crashRunIdRef.current !== runId) return;
     setCrashState((s) => (s ? { ...s, stage: "waiting" } : s));
 
     // 轮询等待真实接力(下一 tick 才发生，最多等 ~70s)。
@@ -143,6 +192,7 @@ export function App() {
     let found: { newWorker: string; summary: string } | null = null;
     while (Date.now() < deadline) {
       await sleep(2500);
+      if (crashRunIdRef.current !== runId) return;
       let d: DashboardLeadDetail;
       try {
         d = await fetchDashboardLeadDetail(leadId);
@@ -150,11 +200,14 @@ export function App() {
         continue;
       }
       setDetail(d);
-      const rec = d.timeline
-        .filter((e) => e.type === "handoff_recovered" && new Date(e.createdAt).getTime() > baselineTs)
-        .at(-1);
-      if (rec) {
-        found = { newWorker: rec.workerId ?? d.lead.workerId ?? "", summary: rec.summary };
+      const recovery = findCrashRecovery(
+        d,
+        baselineTs,
+        crashStartedAtMs,
+        t("crashRecoveredFallback"),
+      );
+      if (recovery) {
+        found = recovery;
         break;
       }
     }
@@ -168,24 +221,32 @@ export function App() {
     );
     fetchDashboardLeads().then(setLeads).catch(() => {});
     setBusy(false);
+    if (found) {
+      await sleep(2400);
+      if (crashRunIdRef.current !== runId) return;
+      setCrashState((s) => (s?.stage === "recovered" ? null : s));
+    }
   }
 
   const activeLead = leads.find((lead) => lead.id === selectedLeadId) ?? null;
-  const stageIndex = leadStageIndex(detail?.lead ?? null, detail?.timeline ?? []);
+  const isFreshDetail = detail?.lead.id === selectedLeadId;
+  const currentDetail = isFreshDetail ? detail : null;
+  const detailReady = Boolean(currentDetail && !isDetailLoading);
+  const timelineEvents = currentDetail?.timeline ?? [];
   const activeEvent =
-    detail?.timeline.find((event) => event.id === activeEventId) ?? detail?.timeline[0] ?? null;
+    timelineEvents.find((event) => event.id === activeEventId) ?? timelineEvents.at(-1) ?? null;
 
   const lastInbound = useMemo(
-    () => detail?.conversation.messages.filter((m) => m.direction === "inbound").at(-1) ?? null,
-    [detail],
+    () => currentDetail?.conversation.messages.filter((m) => m.direction === "inbound").at(-1) ?? null,
+    [currentDetail],
   );
-  const lastReply = detail?.conversation.messages.at(-1) ?? null;
+  const lastReply = currentDetail?.conversation.messages.at(-1) ?? null;
 
-  const profileFields = detail ? Object.values(detail.profile.fields) : [];
-  const budgetField = detail?.profile.fields.budget;
-  const districtField = detail?.profile.fields.district;
-  const usedMemoryChips = detail
-    ? [...(budgetField ? [t("budgetCapChip")] : []), ...detail.profile.needs]
+  const profileFields = currentDetail ? Object.values(currentDetail.profile.fields) : [];
+  const budgetField = currentDetail?.profile.fields.budget;
+  const districtField = currentDetail?.profile.fields.district;
+  const usedMemoryChips = currentDetail
+    ? [...(budgetField ? [t("budgetCapChip")] : []), ...currentDetail.profile.needs]
     : [];
 
   return (
@@ -257,7 +318,7 @@ export function App() {
           </div>
           <div className="layer-row">
             <span>{t("walrusArtifacts")}</span>
-            <strong>{detail ? `${detail.artifacts.length} ${t("verifiedSuffix")}` : "—"}</strong>
+            <strong>{currentDetail ? `${currentDetail.artifacts.length} ${t("verifiedSuffix")}` : "—"}</strong>
           </div>
         </section>
       </aside>
@@ -288,7 +349,7 @@ export function App() {
               <span className="session-dot" /> {t("sessionFollowing")}{" "}
               <strong>{activeLead.displayName}</strong> ·{" "}
               {t("sessionIntent", { intent: activeLead.intentLevel })} ·{" "}
-              {t("sessionTouches", { touch: detail?.lead.followupTouchCount ?? 0 })}
+              {t("sessionTouches", { touch: currentDetail?.lead.followupTouchCount ?? 0 })}
             </>
           ) : (
             <span className="session-muted">{t("noLeadSelected")}</span>
@@ -297,7 +358,11 @@ export function App() {
 
         {/* ② 画像 + 跟进控制台(含 Inspector Tab) */}
         <div className="mid-row">
-          <section className="lead-profile panel">
+          <section
+            className="lead-profile panel"
+            ref={detailPanelRef}
+            aria-busy={selectedLeadId ? !detailReady : undefined}
+          >
             <div className="panel-header">
               <div>
                 <p className="eyebrow">{t("currentLead")}</p>
@@ -308,48 +373,65 @@ export function App() {
               ) : null}
             </div>
 
-            {detail ? (
-              <>
-                <div className="requirement-grid">
-                  <div>
-                    <span>{t("budget")}</span>
-                    <strong>{budgetField?.value ?? t("tbd")}</strong>
+            <div className="lead-profile-body" ref={detailBodyRef}>
+              {detailReady && currentDetail ? (
+                <>
+                  <div className="requirement-grid detail-anim-item">
+                    <div>
+                      <span>{t("budget")}</span>
+                      <strong>{budgetField?.value ?? t("tbd")}</strong>
+                    </div>
+                    <div>
+                      <span>{t("area")}</span>
+                      <strong>{districtField?.value ?? t("tbd")}</strong>
+                    </div>
+                    <div>
+                      <span>{t("stage")}</span>
+                      <strong>{label(t, "status", activeLead?.status ?? "")}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <span>{t("area")}</span>
-                    <strong>{districtField?.value ?? t("tbd")}</strong>
+
+                  {currentDetail.profile.needs.length > 0 ? (
+                    <div className="chips detail-anim-item">
+                      {currentDetail.profile.needs.map((need) => (
+                        <span key={need}>{need}</span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {currentDetail.profile.sourceNote ? (
+                    <div className="source-note detail-anim-item">
+                      <p className="section-kicker">{t("sourceSignal")}</p>
+                      <p>{currentDetail.profile.sourceNote}</p>
+                    </div>
+                  ) : null}
+
+                  <div className="customer-reply detail-anim-item">
+                    <p className="section-kicker">{t("latestReply")}</p>
+                    <blockquote className={lastReply?.direction === "outbound" ? "outbound" : ""}>
+                      {lastInbound?.content ?? t("noReply")}
+                    </blockquote>
                   </div>
-                  <div>
-                    <span>{t("stage")}</span>
-                    <strong>{label(t, "status", activeLead?.status ?? "")}</strong>
+                </>
+              ) : selectedLeadId ? (
+                <div className="lead-detail-skeleton" aria-hidden="true">
+                  <div className="lead-skeleton-grid detail-anim-item">
+                    <span />
+                    <span />
+                    <span />
                   </div>
+                  <div className="lead-skeleton-chips detail-anim-item">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <div className="lead-skeleton-block detail-anim-item" />
+                  <div className="lead-skeleton-block lead-skeleton-block-tall detail-anim-item" />
                 </div>
-
-                {detail.profile.needs.length > 0 ? (
-                  <div className="chips">
-                    {detail.profile.needs.map((need) => (
-                      <span key={need}>{need}</span>
-                    ))}
-                  </div>
-                ) : null}
-
-                {detail.profile.sourceNote ? (
-                  <div className="source-note">
-                    <p className="section-kicker">{t("sourceSignal")}</p>
-                    <p>{detail.profile.sourceNote}</p>
-                  </div>
-                ) : null}
-
-                <div className="customer-reply">
-                  <p className="section-kicker">{t("latestReply")}</p>
-                  <blockquote className={lastReply?.direction === "outbound" ? "outbound" : ""}>
-                    {lastInbound?.content ?? t("noReply")}
-                  </blockquote>
-                </div>
-              </>
-            ) : (
-              <p className="lead-meta">{t("selectLeadHint")}</p>
-            )}
+              ) : (
+                <p className="lead-meta">{t("selectLeadHint")}</p>
+              )}
+            </div>
           </section>
 
           <section className="console panel">
@@ -376,7 +458,7 @@ export function App() {
             {activeTab === "followup" ? (
               <div className="followup-body">
                 <div className="message-preview">
-                  <p>{detail?.nextFollowup?.message ?? t("waitingFollowup")}</p>
+                  <p>{currentDetail?.nextFollowup?.message ?? t("waitingFollowup")}</p>
                 </div>
                 {usedMemoryChips.length > 0 ? (
                   <div className="used-memory">
@@ -394,7 +476,7 @@ export function App() {
                     {t("btnStart")}
                   </button>
                   <button type="button"
-                    disabled={!selectedLeadId || busy || detail?.lead.status !== "contacting"}
+                    disabled={!selectedLeadId || busy || currentDetail?.lead.status !== "contacting"}
                     onClick={handleSimulateCrash}>
                     {t("btnCrash")}
                   </button>
@@ -409,13 +491,13 @@ export function App() {
 
             {activeTab === "memory" ? (
               <div className="memory-grid">
-                {(detail?.memories ?? []).map((memory) => (
+                {(currentDetail?.memories ?? []).map((memory) => (
                   <div className="memory-row" key={memory.id}>
                     <span>{label(t, "kind", memory.kind)}</span>
                     <strong>{memory.summary}</strong>
                   </div>
                 ))}
-                {detail && detail.memories.length === 0
+                {currentDetail && currentDetail.memories.length === 0
                   ? profileFields.map((field) => (
                       <div className="memory-row" key={field.label}>
                         <span>{field.label}</span>
@@ -428,7 +510,7 @@ export function App() {
 
             {activeTab === "artifacts" ? (
               <div className="artifact-list">
-                {(detail?.artifacts ?? []).map((artifact) => (
+                {(currentDetail?.artifacts ?? []).map((artifact) => (
                   <div className="artifact-row" key={artifact.id}>
                     <div>
                       <strong>{label(t, "artifact", artifact.artifactType)}</strong>
@@ -443,7 +525,7 @@ export function App() {
 
             {activeTab === "trace" ? (
               <div className="trace-list">
-                {(detail?.timeline ?? []).map((event) => (
+                {(currentDetail?.timeline ?? []).map((event) => (
                   <div className="trace-row" key={event.id}>
                     <code>{event.agentName ?? event.type}</code>
                     <span>{event.summary}</span>
@@ -455,22 +537,41 @@ export function App() {
           </section>
         </div>
 
-        {/* ③ 底部横向时间线进度带 */}
+        {/* ③ 底部横向时间线：真实事件流 + 横向滚动窗口（每个事件一个节点）。 */}
         <section className="timeline-strip panel">
           <p className="section-kicker">{t("timelineTitle")}</p>
-          <div className="hsteps">
-            {TIMELINE_STAGES.map((stage, i) => {
-              const cls =
-                i < stageIndex ? "hstep done" : i === stageIndex ? "hstep cur" : "hstep";
-              return (
-                <div className={cls} key={stage.key}>
-                  <span className="hnode" />
-                  <span className="hlabel">{t(`stage_${stage.key}`)}</span>
-                  {i === stageIndex ? <span className="hcur">{t("inProgress")}</span> : null}
-                </div>
-              );
-            })}
-          </div>
+          {timelineEvents.length > 0 ? (
+            <div className="htl-scroll">
+              <div className="htl-track">
+                {timelineEvents.map((event, i) => {
+                  const isLast = i === timelineEvents.length - 1;
+                  const cls = [
+                    "hstep",
+                    "done",
+                    isLast ? "cur" : "",
+                    event.id === activeEventId ? "active" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  return (
+                    <button
+                      className={cls}
+                      key={event.id}
+                      type="button"
+                      onClick={() => setActiveEventId(event.id)}
+                    >
+                      <span className="hnode" />
+                      <span className="hlabel">{label(t, "event", event.type)}</span>
+                      <span className="htime">{formatTime(event.createdAt)}</span>
+                      {isLast ? <span className="hcur">{t("inProgress")}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="lead-meta">{t("timelineEmpty")}</p>
+          )}
           {activeEvent ? (
             <div className="strip-detail">
               <span>{label(t, "event", activeEvent.type)}: {activeEvent.summary}</span>
@@ -491,7 +592,11 @@ export function App() {
               className="crash-close"
               type="button"
               aria-label={t("crashClose")}
-              onClick={() => setCrashState(null)}
+              onClick={() => {
+                crashRunIdRef.current += 1;
+                setCrashState(null);
+                setBusy(false);
+              }}
             >
               ×
             </button>

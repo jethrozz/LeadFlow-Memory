@@ -329,6 +329,11 @@ button {
   min-height: 0;
 }
 
+.lead-profile {
+  display: flex;
+  flex-direction: column;
+}
+
 .timeline-panel {
   grid-row: span 2;
 }
@@ -343,6 +348,15 @@ button {
 
 .panel h3 {
   font-size: 22px;
+}
+
+.lead-profile-body {
+  flex: 1;
+  min-height: 312px;
+}
+
+.detail-anim-item {
+  will-change: transform, opacity;
 }
 
 .requirement-grid {
@@ -423,6 +437,77 @@ blockquote {
   background: #e2f7ef;
   color: var(--green);
   padding: 8px 11px;
+}
+
+.lead-detail-skeleton {
+  display: grid;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.lead-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.lead-skeleton-grid span,
+.lead-skeleton-chips span,
+.lead-skeleton-block {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.lead-skeleton-grid span {
+  height: 68px;
+}
+
+.lead-skeleton-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lead-skeleton-chips span {
+  height: 34px;
+  border-radius: 999px;
+}
+
+.lead-skeleton-chips span:nth-child(1) { width: 92px; }
+.lead-skeleton-chips span:nth-child(2) { width: 76px; }
+.lead-skeleton-chips span:nth-child(3) { width: 104px; }
+
+.lead-skeleton-block {
+  height: 88px;
+}
+
+.lead-skeleton-block-tall {
+  height: 118px;
+  margin-top: 2px;
+}
+
+.lead-skeleton-grid span::after,
+.lead-skeleton-chips span::after,
+.lead-skeleton-block::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.48) 35%,
+    transparent 70%
+  );
+  content: "";
+  transform: translateX(-100%);
+  animation: lead-skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes lead-skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .timeline {
@@ -648,6 +733,10 @@ code {
   }
 
   .requirement-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lead-skeleton-grid {
     grid-template-columns: 1fr;
   }
 
@@ -961,57 +1050,96 @@ code {
 
 /* ③ 底部横向时间线进度带（占较大高度比） */
 .timeline-strip { padding: 16px 18px; }
-.hsteps {
+/* 横向滚动窗口：内置一个有边框的窗口，事件多了在窗口内横向滚动，滚动条常驻可见 */
+.htl-scroll {
+  margin-top: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 16px 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  /* Firefox：常驻细滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(46, 56, 52, 0.32) transparent;
+}
+/* Chrome / Safari：样式化滚动条 = 常驻非覆盖式，清晰可见 */
+.htl-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+.htl-scroll::-webkit-scrollbar-track {
+  background: rgba(46, 56, 52, 0.06);
+  border-radius: 999px;
+}
+.htl-scroll::-webkit-scrollbar-thumb {
+  background: rgba(46, 56, 52, 0.32);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+  background-clip: padding-box;
+}
+.htl-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(46, 56, 52, 0.5);
+}
+.htl-track {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  position: relative;
-  margin-top: 14px;
+  min-width: min-content;
+  padding: 0 6px;
 }
-.hsteps::before {
+.htl-track::before {
   content: "";
   position: absolute;
-  top: 9px; left: 3%; right: 3%;
-  height: 2px; background: #2f323b;
+  top: 9px; left: 14px; right: 14px;
+  height: 2px; background: var(--soft);
 }
 .hstep {
   position: relative;
   z-index: 1;
-  flex: 1;
+  flex: 0 0 auto;
+  width: 108px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 .hnode {
   width: 18px; height: 18px; border-radius: 50%;
-  background: #22252d; border: 2px solid #3a3d46;
+  background: var(--surface); border: 2px solid var(--soft);
 }
-.hstep.done .hnode { background: #3ec46d; border-color: #3ec46d; }
+.hstep.done .hnode { background: var(--green); border-color: var(--green); }
 .hstep.cur .hnode {
-  background: #4f8cff; border-color: #9cc1ff;
-  box-shadow: 0 0 0 5px rgba(79, 140, 255, 0.2);
+  background: var(--blue); border-color: var(--blue);
+  box-shadow: 0 0 0 5px rgba(40, 108, 189, 0.18);
   animation: hstep-pulse 1.4s infinite;
 }
 @keyframes hstep-pulse {
-  0%, 100% { box-shadow: 0 0 0 5px rgba(79, 140, 255, 0.2); }
-  50% { box-shadow: 0 0 0 9px rgba(79, 140, 255, 0.12); }
+  0%, 100% { box-shadow: 0 0 0 5px rgba(40, 108, 189, 0.18); }
+  50% { box-shadow: 0 0 0 9px rgba(40, 108, 189, 0.1); }
 }
-.hlabel { font-size: 12px; color: #7a808b; text-align: center; }
-.hstep.done .hlabel { color: #9aa6b2; }
-.hstep.cur .hlabel { color: #e7eefc; font-weight: 600; }
+.hlabel { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.3; }
+.hstep.done .hlabel { color: var(--ink); }
+.hstep.cur .hlabel { color: var(--ink); font-weight: 600; }
+.hstep.active .hlabel { color: var(--blue); font-weight: 600; }
+.hstep.active .hnode { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(40, 108, 189, 0.16); }
+.htime { font-size: 10px; color: var(--muted); }
 .hcur {
-  font-size: 11px; color: #9cc1ff;
-  border: 1px solid rgba(79, 140, 255, 0.4);
+  font-size: 11px; color: var(--blue);
+  border: 1px solid rgba(40, 108, 189, 0.4);
   border-radius: 9px; padding: 0 6px;
 }
 .strip-detail {
   display: flex; align-items: center; gap: 12px;
   margin-top: 16px; padding-top: 12px;
-  border-top: 1px solid #23262e;
-  font-size: 13px; color: #aeb4bf;
+  border-top: 1px solid var(--line);
+  font-size: 13px; color: var(--muted);
 }
-.strip-detail code { color: #6fb1ff; font-size: 12px; }
+.strip-detail code { color: var(--blue); font-size: 12px; }
 
 /* 右侧实时画面栏 */
 .device-rail {
@@ -1022,9 +1150,27 @@ code {
 }
 .device-screen { display: flex; flex-direction: column; gap: 10px; height: 100%; }
 .device-screen-head {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(79, 140, 255, 0.18);
 }
-.device-title { font-size: 13px; color: #e7eefc; font-weight: 600; }
+.device-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  border: 1px solid rgba(111, 177, 255, 0.38);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(79, 140, 255, 0.22), rgba(62, 196, 109, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #f4f8ff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  padding: 0 12px;
+}
 .device-live { font-size: 11px; }
 .device-live-live { color: #3ec46d; }
 .device-live-connecting { color: #9cc1ff; }

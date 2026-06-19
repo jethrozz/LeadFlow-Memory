@@ -67,6 +67,7 @@ const zh: Dict = {
   // 时间线
   timelineTitle: "记忆时间线 · 当前进度",
   inProgress: "进行中",
+  timelineEmpty: "暂无事件",
   stage_discovered: "发现线索",
   stage_scored: "意向评分",
   stage_contacted: "首次跟进",
@@ -86,6 +87,7 @@ const zh: Dict = {
   // 事件
   event_lead_discovered: "发现线索",
   event_conversion_decision_made: "生成跟进",
+  event_handoff_triggered: "接力触发",
   event_handoff_recovered: "接力恢复",
   event_customer_replied: "客户回复",
   event_agent_replied: "发送跟进",
@@ -113,11 +115,12 @@ const zh: Dict = {
   crashMemoryPacket: "🧠 记忆",
   crashDetailCrashing: "原 Worker 异常退出，租约失效，跟进中断…",
   crashDetailWaiting: "另一个 Worker 正在认领该线索，并从 MemWal 召回客户长期记忆以恢复上下文…",
-  crashRecoveredLabel: "从 MemWal 长期记忆恢复：",
+  crashRecoveredLabel: "恢复结果：",
+  crashRecoveredFallback: "接力 Worker 已重新认领线索，聊天通道已恢复；恢复证明事件可能稍后写入时间线。",
   crashDetailTimeout: "接管仍在进行，稍后可在「记忆时间线」查看 接力恢复 事件与恢复摘要。",
   crashDone: "完成",
-  // 设备实况
-  deviceTitle: "设备实况",
+  // 设备实时画面
+  deviceTitle: "设备实时画面",
   deviceConnecting: "连接中…",
   deviceNoDevice: "设备未连接",
   deviceStalled: "画面已暂停",
@@ -176,6 +179,7 @@ const en: Dict = {
   verified: "Verified",
   timelineTitle: "Memory Timeline · Current Progress",
   inProgress: "In progress",
+  timelineEmpty: "No events yet",
   stage_discovered: "Discovered",
   stage_scored: "Scored",
   stage_contacted: "First contact",
@@ -193,6 +197,7 @@ const en: Dict = {
   status_handoff: "Handoff",
   event_lead_discovered: "Lead discovered",
   event_conversion_decision_made: "Follow-up generated",
+  event_handoff_triggered: "Handoff triggered",
   event_handoff_recovered: "Handoff recovered",
   event_customer_replied: "Customer replied",
   event_agent_replied: "Follow-up sent",
@@ -218,11 +223,13 @@ const en: Dict = {
   crashDetailCrashing: "Previous worker exited unexpectedly, lease expired, follow-up interrupted…",
   crashDetailWaiting:
     "Another worker is claiming the lead and recalling the customer's long-term memory from MemWal to restore context…",
-  crashRecoveredLabel: "Recovered from MemWal long-term memory:",
+  crashRecoveredLabel: "Recovery result:",
+  crashRecoveredFallback:
+    "The relay worker has reclaimed the lead and the chat channel is active again; the proof event may appear in the timeline shortly.",
   crashDetailTimeout:
     "Takeover still in progress; check the handoff recovery event and summary in the Memory Timeline shortly.",
   crashDone: "Done",
-  deviceTitle: "Device Live",
+  deviceTitle: "Live Device Feed",
   deviceConnecting: "Connecting…",
   deviceNoDevice: "No device connected",
   deviceStalled: "Feed paused",

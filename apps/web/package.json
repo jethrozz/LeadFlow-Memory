@@ -12,9 +12,10 @@
   "dependencies": {
     "@leadflow/core": "workspace:*",
     "@vitejs/plugin-react": "^4.3.3",
-    "vite": "^5.4.10",
+    "gsap": "^3.15.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.10"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",

@@ -66,6 +66,11 @@ The `leadflow-memory-prototype/AGENTS.md` file contains important instructions:
 - Record design feedback and preferences in `AGENTS.md`
 - When implementing from a mock, treat the image as source of truth for layout, spacing, color, typography, and content
 
+## Design Preferences
+
+- Device live / device feed section headings should use explicit wording and stronger visual hierarchy so the section purpose is obvious at a glance.
+- Lead detail panels should avoid abrupt jump-cuts on selection changes; prefer stable-height loading states and smooth motion when switching leads.
+
 ## Project Documents
 
 - `docs/proposals/leadflow-memory-proposal-zh.md` - Chinese proposal with full project scope

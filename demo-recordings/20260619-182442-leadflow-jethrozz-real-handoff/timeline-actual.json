@@ -1,0 +1,97 @@
+{
+  "leadInMs": 0,
+  "gapMs": 0,
+  "totalMs": 142160,
+  "steps": [
+    {
+      "id": "01",
+      "cn": "打开英文工作台，当前只有真实线索 jethrozz。",
+      "en": "Open the English workbench with the real jethrozz lead.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/01.wav",
+      "startMs": 133,
+      "endMs": 5093,
+      "durationMs": 4960,
+      "holdMs": 4960
+    },
+    {
+      "id": "02",
+      "cn": "点击查看这条线索，读取长期记忆画像。",
+      "en": "Open the lead and load its long-term memory profile.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/02.wav",
+      "startMs": 5896,
+      "endMs": 10536,
+      "durationMs": 4640,
+      "holdMs": 4640
+    },
+    {
+      "id": "03",
+      "cn": "画像来自真实会话：高新区三房，近地铁和学区。",
+      "en": "The profile comes from real chat context: Gaoxin, three rooms, metro, and school priority.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/03.wav",
+      "startMs": 11410,
+      "endMs": 17810,
+      "durationMs": 6400,
+      "holdMs": 6400
+    },
+    {
+      "id": "04",
+      "cn": "查看 MemWal 记忆和 Walrus 证据，来源可以回溯。",
+      "en": "Inspect MemWal memory and Walrus evidence for traceable context.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/04.wav",
+      "startMs": 18614,
+      "endMs": 23094,
+      "durationMs": 4480,
+      "holdMs": 4480
+    },
+    {
+      "id": "05",
+      "cn": "回到跟进面板，点击加入跟进，不手动发送。",
+      "en": "Return to follow-up and click Start follow-up, without pressing manual Send.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/05.wav",
+      "startMs": 24899,
+      "endMs": 29379,
+      "durationMs": 4480,
+      "holdMs": 4480
+    },
+    {
+      "id": "06",
+      "cn": "后台 worker 接管线索，真实设备画面同步展示。",
+      "en": "A background worker takes over while the live device feed remains visible.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/06.wav",
+      "startMs": 31433,
+      "endMs": 35913,
+      "durationMs": 4480,
+      "holdMs": 4480
+    },
+    {
+      "id": "07",
+      "cn": "现在模拟 worker 崩溃，让租约过期。",
+      "en": "Now simulate a worker crash and expire the lease.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/07.wav",
+      "startMs": 80462,
+      "endMs": 84462,
+      "durationMs": 4000,
+      "holdMs": 4000
+    },
+    {
+      "id": "08",
+      "cn": "另一个 Agent 认领线索，并从记忆中恢复上下文。",
+      "en": "Another agent claims the lead and restores context from memory.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/08.wav",
+      "startMs": 85389,
+      "endMs": 90189,
+      "durationMs": 4800,
+      "holdMs": 4800
+    },
+    {
+      "id": "09",
+      "cn": "接力完成后，时间线留下可验证的恢复事件。",
+      "en": "After handoff, the timeline records a verifiable recovery event.",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/09.wav",
+      "startMs": 127918,
+      "endMs": 132878,
+      "durationMs": 4960,
+      "holdMs": 4960
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "01",
+    "cn": "打开英文工作台，当前只有真实线索 jethrozz。",
+    "en": "Open the English workbench with the real jethrozz lead.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/01.wav",
+    "duration": 4.96
+  },
+  {
+    "id": "02",
+    "cn": "点击查看这条线索，读取长期记忆画像。",
+    "en": "Open the lead and load its long-term memory profile.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/02.wav",
+    "duration": 4.64
+  },
+  {
+    "id": "03",
+    "cn": "画像来自真实会话：高新区三房，近地铁和学区。",
+    "en": "The profile comes from real chat context: Gaoxin, three rooms, metro, and school priority.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/03.wav",
+    "duration": 6.4
+  },
+  {
+    "id": "04",
+    "cn": "查看 MemWal 记忆和 Walrus 证据，来源可以回溯。",
+    "en": "Inspect MemWal memory and Walrus evidence for traceable context.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/04.wav",
+    "duration": 4.48
+  },
+  {
+    "id": "05",
+    "cn": "回到跟进面板，点击加入跟进，不手动发送。",
+    "en": "Return to follow-up and click Start follow-up, without pressing manual Send.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/05.wav",
+    "duration": 4.48
+  },
+  {
+    "id": "06",
+    "cn": "后台 worker 接管线索，真实设备画面同步展示。",
+    "en": "A background worker takes over while the live device feed remains visible.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/06.wav",
+    "duration": 4.48
+  },
+  {
+    "id": "07",
+    "cn": "现在模拟 worker 崩溃，让租约过期。",
+    "en": "Now simulate a worker crash and expire the lease.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/07.wav",
+    "duration": 4.0
+  },
+  {
+    "id": "08",
+    "cn": "另一个 Agent 认领线索，并从记忆中恢复上下文。",
+    "en": "Another agent claims the lead and restores context from memory.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/08.wav",
+    "duration": 4.8
+  },
+  {
+    "id": "09",
+    "cn": "接力完成后，时间线留下可验证的恢复事件。",
+    "en": "After handoff, the timeline records a verifiable recovery event.",
+    "voice": "冰糖",
+    "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-182442-leadflow-jethrozz-real-handoff/audio/09.wav",
+    "duration": 4.96
+  }
+]

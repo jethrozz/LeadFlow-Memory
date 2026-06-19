@@ -1,0 +1,44 @@
+1
+00:00:00,800 --> 00:00:05,760
+打开英文工作台，当前只有真实线索 jethrozz。
+Open the English workbench with the real jethrozz lead.
+
+2
+00:00:06,560 --> 00:00:11,200
+点击查看这条线索，读取长期记忆画像。
+Open the lead and load its long-term memory profile.
+
+3
+00:00:12,000 --> 00:00:18,400
+画像来自真实会话：高新区三房，近地铁和学区。
+The profile comes from real chat context: Gaoxin, three rooms, metro, and school priority.
+
+4
+00:00:19,200 --> 00:00:23,680
+查看 MemWal 记忆和 Walrus 证据，来源可以回溯。
+Inspect MemWal memory and Walrus evidence for traceable context.
+
+5
+00:00:24,480 --> 00:00:28,960
+回到跟进面板，点击加入跟进，不手动发送。
+Return to follow-up and click Start follow-up, without pressing manual Send.
+
+6
+00:00:29,760 --> 00:00:34,240
+后台 worker 接管线索，真实设备画面同步展示。
+A background worker takes over while the live device feed remains visible.
+
+7
+00:00:35,040 --> 00:00:39,040
+现在模拟 worker 崩溃，让租约过期。
+Now simulate a worker crash and expire the lease.
+
+8
+00:00:39,840 --> 00:00:44,640
+另一个 Agent 认领线索，并从记忆中恢复上下文。
+Another agent claims the lead and restores context from memory.
+
+9
+00:00:45,440 --> 00:00:50,400
+接力完成后，时间线留下可验证的恢复事件。
+After handoff, the timeline records a verifiable recovery event.

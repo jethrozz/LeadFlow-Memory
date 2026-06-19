@@ -1,0 +1,97 @@
+{
+  "leadInMs": 0,
+  "gapMs": 0,
+  "totalMs": 240480,
+  "steps": [
+    {
+      "id": "01",
+      "cn": "Open the English workbench with the real jethrozz lead.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/01.wav",
+      "startMs": 200,
+      "endMs": 4200,
+      "durationMs": 4000,
+      "holdMs": 4000
+    },
+    {
+      "id": "02",
+      "cn": "Select the lead and load the long-term memory profile.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/02.wav",
+      "startMs": 5005,
+      "endMs": 9165,
+      "durationMs": 4160,
+      "holdMs": 4160
+    },
+    {
+      "id": "03",
+      "cn": "The profile is built from real conversation context: Gaoxin, three rooms, metro access, and school priority.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/03.wav",
+      "startMs": 10061,
+      "endMs": 18541,
+      "durationMs": 8480,
+      "holdMs": 8480
+    },
+    {
+      "id": "04",
+      "cn": "Inspect MemWal memory and Walrus evidence so the source context remains traceable.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/04.wav",
+      "startMs": 19346,
+      "endMs": 27026,
+      "durationMs": 7680,
+      "holdMs": 7680
+    },
+    {
+      "id": "05",
+      "cn": "Return to follow-up and click Start follow-up. The manual Send button is not used.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/05.wav",
+      "startMs": 28793,
+      "endMs": 36153,
+      "durationMs": 7360,
+      "holdMs": 7360
+    },
+    {
+      "id": "06",
+      "cn": "The background worker takes over the live lead while the device feed stays visible.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/06.wav",
+      "startMs": 38234,
+      "endMs": 43834,
+      "durationMs": 5600,
+      "holdMs": 5600
+    },
+    {
+      "id": "07",
+      "cn": "Now simulate a worker crash and expire the lease.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/07.wav",
+      "startMs": 98736,
+      "endMs": 103216,
+      "durationMs": 4480,
+      "holdMs": 4480
+    },
+    {
+      "id": "08",
+      "cn": "Another agent claims the lead and restores context from long-term memory.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/08.wav",
+      "startMs": 104078,
+      "endMs": 109678,
+      "durationMs": 5600,
+      "holdMs": 5600
+    },
+    {
+      "id": "09",
+      "cn": "After handoff, the agent trace records a verifiable recovery event.",
+      "en": "",
+      "audio": "/Users/jethrozz/Documents/UGit/LeadFlow-Memory/demo-recordings/20260619-184345-leadflow-jethrozz-english-handoff/audio/09.wav",
+      "startMs": 225891,
+      "endMs": 231171,
+      "durationMs": 5280,
+      "holdMs": 5280
+    }
+  ]
+}

@@ -1,166 +1,166 @@
-{"kind":"deck","id":"pr/natbvj","name":"Deck"}
-{"kind":"layout","layoutId":"3d86e92e-c8f8-4848-bc16-336c92066aa8","name":"Master","type":"master"}
-{"kind":"layout","layoutId":"0a691064-cf86-42a1-8479-1c43c775c478","name":"Title Slide","type":"title"}
-{"kind":"slide","id":"sl/cq40dh","slide":1,"title":"Auto Lead Flow","textShapes":7}
-{"kind":"textbox","id":"sh/l87ed8ba","slide":1,"text":"Auto Lead Flow","textPreview":"Auto Lead Flow","textChars":14,"textLines":1,"bbox":[82,130,660,86]}
-{"kind":"textbox","id":"sh/sneloj2t","slide":1,"text":"Verifiable Social Lead Automation\nfor Configurable Sales Agents","textPreview":"Verifiable Social Lead Automation | for Configurable Sales Agents","textChars":63,"textLines":2,"bbox":[86,232,650,94]}
-{"kind":"textbox","id":"sh/3ex0nuxc","slide":1,"text":"社交平台线索自动发现、真实触达与持续跟进","textPreview":"社交平台线索自动发现、真实触达与持续跟进","textChars":20,"textLines":1,"bbox":[88,350,620,34]}
-{"kind":"textbox","id":"sh/at47y1kr","slide":1,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[88,480,118,34]}
-{"kind":"textbox","id":"sh/lkjm1cfa","slide":1,"text":"Qualify","textPreview":"Qualify","textChars":7,"textLines":1,"bbox":[238,480,118,34]}
-{"kind":"shape","id":"sh/szqtcj6t","slide":1,"bbox":[220,489,28,16]}
-{"kind":"textbox","id":"sh/3itgfmlk","slide":1,"text":"Outreach","textPreview":"Outreach","textChars":8,"textLines":1,"bbox":[388,480,118,34]}
-{"kind":"shape","id":"sh/ex0nuxc3","slide":1,"bbox":[370,489,28,16]}
-{"kind":"textbox","id":"sh/wfyxobm5","slide":1,"text":"Follow-up","textPreview":"Follow-up","textChars":9,"textLines":1,"bbox":[538,480,118,34]}
-{"kind":"shape","id":"sh/l0rqd4vm","slide":1,"bbox":[520,489,28,16]}
-{"kind":"image","id":"im/j6tovaho","slide":1,"name":"","alt":"Auto Lead Flow logo","bbox":[770,88,360,360]}
-{"kind":"notes","id":"nt/cq40dh","slide":1,"text":"Open with the simple story: social intent already exists online, but sales teams still find and message people manually. Auto Lead Flow automates discovery, qualification, real-phone outreach, and follow-up."}
-{"kind":"slide","id":"sl/w00x4q","slide":2,"title":"Social Lead Generation Is Still Too Manual","textShapes":10}
-{"kind":"textbox","id":"sh/u18jqh0f","slide":2,"text":"Social Lead Generation Is Still Too Manual","textPreview":"Social Lead Generation Is Still Too Manual","textChars":42,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/1orytsvu","slide":2,"text":"社交平台获客仍然高度依赖人工搜索、判断和重复触达。","textPreview":"社交平台获客仍然高度依赖人工搜索、判断和重复触达。","textChars":25,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"shape","id":"sh/c7u54zid","slide":2,"bbox":[78,188,340,292]}
-{"kind":"shape","id":"sh/judg7ads","slide":2,"bbox":[78,188,7,292]}
-{"kind":"textbox","id":"sh/u9knih4b","slide":2,"text":"Manual discovery","textPreview":"Manual discovery","textChars":16,"textLines":1,"bbox":[104,212,292,34]}
-{"kind":"textbox","id":"sh/1032lszq","slide":2,"text":"Sales teams scroll posts and comments to find people who may be ready to buy.","textPreview":"Sales teams scroll posts and comments to find people who may be ready to buy.","textChars":77,"textLines":1,"bbox":[104,256,288,206]}
-{"kind":"shape","id":"sh/cfa9w3m9","slide":2,"bbox":[470,188,340,292]}
-{"kind":"shape","id":"sh/nyd0z610","slide":2,"bbox":[470,188,7,292]}
-{"kind":"textbox","id":"sh/udg7adsj","slide":2,"text":"Scattered context","textPreview":"Scattered context","textChars":17,"textLines":1,"bbox":[496,212,292,34]}
-{"kind":"textbox","id":"sh/czed8v6p","slide":2,"text":"Budget, location, urgency, concerns, and past replies are split across conversations.","textPreview":"Budget, location, urgency, concerns, and past replies are split across conversations.","textChars":85,"textLines":1,"bbox":[496,256,288,206]}
-{"kind":"shape","id":"sh/5kb6xkf6","slide":2,"bbox":[862,188,340,292]}
-{"kind":"shape","id":"sh/ytsvu9kn","slide":2,"bbox":[862,188,7,292]}
-{"kind":"textbox","id":"sh/neloj2t8","slide":2,"text":"Hard to audit","textPreview":"Hard to audit","textChars":13,"textLines":1,"bbox":[888,212,292,34]}
-{"kind":"textbox","id":"sh/cbulwval","slide":2,"text":"It is difficult to prove why a lead was scored or why a message was sent.","textPreview":"It is difficult to prove why a lead was scored or why a message was sent.","textChars":73,"textLines":1,"bbox":[888,256,288,206]}
-{"kind":"textbox","id":"sh/5sneloj2","slide":2,"text":"High-frequency work, low automation, fragile memory.","textPreview":"High-frequency work, low automation, fragile memory.","textChars":52,"textLines":1,"bbox":[120,552,1040,42]}
-{"kind":"textbox","id":"sh/u54zidon","slide":2,"text":"Auto Lead Flow  /  2","textPreview":"Auto Lead Flow  /  2","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/w00x4q","slide":2,"text":"Use this slide to anchor the pain. The customer problem is not just CRM storage: the manual work starts on social platforms before the lead exists in a CRM."}
-{"kind":"slide","id":"sl/wbb495","slide":3,"title":"High-intent Leads Already Express Needs Online","textShapes":16}
-{"kind":"textbox","id":"sh/hwfyxobm","slide":3,"text":"High-intent Leads Already Express Needs Online","textPreview":"High-intent Leads Already Express Needs Online","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/65wjudg7","slide":3,"text":"机会：很多潜在线索已经在社交内容里表达了明确需求。","textPreview":"机会：很多潜在线索已经在社交内容里表达了明确需求。","textChars":25,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"shape","id":"sh/zqtcj6to","slide":3,"bbox":[92,172,548,328]}
-{"kind":"textbox","id":"sh/oza1gvy9","slide":3,"text":"Xiaohongshu post / comment","textPreview":"Xiaohongshu post / comment","textChars":26,"textLines":1,"bbox":[124,204,320,26]}
-{"kind":"textbox","id":"sh/hk3q5o7q","slide":3,"text":"“想在高新区附近买个三房，预算别太高，最好通勤方便。”","textPreview":"“想在高新区附近买个三房，预算别太高，最好通勤方便。”","textChars":27,"textLines":1,"bbox":[124,258,456,122]}
-{"kind":"textbox","id":"sh/6xkf6dcb","slide":3,"text":"This is not a cold lead. It is a visible buying signal.","textPreview":"This is not a cold lead. It is a visible buying signal.","textChars":55,"textLines":1,"bbox":[124,408,430,34]}
-{"kind":"shape","id":"sh/zed8v6ps","slide":3,"bbox":[718,168,410,52]}
-{"kind":"textbox","id":"sh/orytsvu9","slide":3,"text":"Budget","textPreview":"Budget","textChars":6,"textLines":1,"bbox":[744,180,130,24]}
-{"kind":"textbox","id":"sh/hcrmhk3q","slide":3,"text":"price-sensitive","textPreview":"price-sensitive","textChars":15,"textLines":1,"bbox":[884,181,210,24]}
-{"kind":"shape","id":"sh/d4vmtwra","slide":3,"bbox":[718,240,410,52]}
-{"kind":"textbox","id":"sh/oj2t83it","slide":3,"text":"Location","textPreview":"Location","textChars":8,"textLines":1,"bbox":[744,252,130,24]}
-{"kind":"textbox","id":"sh/vy90je9c","slide":3,"text":"high-tech district","textPreview":"high-tech district","textChars":18,"textLines":1,"bbox":[884,253,210,24]}
-{"kind":"shape","id":"sh/6dcbulwv","slide":3,"bbox":[718,312,410,52]}
-{"kind":"textbox","id":"sh/dsji5sne","slide":3,"text":"Layout","textPreview":"Layout","textChars":6,"textLines":1,"bbox":[744,324,130,24]}
-{"kind":"textbox","id":"sh/o7qpg3ex","slide":3,"text":"three-bedroom","textPreview":"three-bedroom","textChars":13,"textLines":1,"bbox":[884,325,210,24]}
-{"kind":"shape","id":"sh/vmtwra5g","slide":3,"bbox":[718,384,410,52]}
-{"kind":"textbox","id":"sh/61032lsz","slide":3,"text":"Concern","textPreview":"Concern","textChars":7,"textLines":1,"bbox":[744,396,130,24]}
-{"kind":"textbox","id":"sh/dg7adsji","slide":3,"text":"commute","textPreview":"commute","textChars":7,"textLines":1,"bbox":[884,397,210,24]}
-{"kind":"shape","id":"sh/ovahoza1","slide":3,"bbox":[718,456,410,52]}
-{"kind":"textbox","id":"sh/k3q5o7qp","slide":3,"text":"Intent","textPreview":"Intent","textChars":6,"textLines":1,"bbox":[744,468,130,24]}
-{"kind":"textbox","id":"sh/donyd0z6","slide":3,"text":"active buyer","textPreview":"active buyer","textChars":12,"textLines":1,"bbox":[884,469,210,24]}
-{"kind":"textbox","id":"sh/2x4nap4r","slide":3,"text":"Auto Lead Flow  /  3","textPreview":"Auto Lead Flow  /  3","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/wbb495","slide":3,"text":"The demo scenario starts from a concrete social signal. The system turns unstructured text into a structured lead profile."}
-{"kind":"slide","id":"sl/5inb7k","slide":4,"title":"Auto Lead Flow: From Social Intent to Outreach","textShapes":11}
-{"kind":"textbox","id":"sh/mhk3q5o7","slide":4,"text":"Auto Lead Flow: From Social Intent to Outreach","textPreview":"Auto Lead Flow: From Social Intent to Outreach","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/t83itgfm","slide":4,"text":"可配置销售 Agent 工作流：发现线索、识别画像、真实触达、持续跟进。","textPreview":"可配置销售 Agent 工作流：发现线索、识别画像、真实触达、持续跟进。","textChars":36,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"textbox","id":"sh/4nap4r65","slide":4,"text":"Social\nListening","textPreview":"Social | Listening","textChars":16,"textLines":2,"bbox":[90,238,132,112]}
-{"kind":"textbox","id":"sh/bq1oryts","slide":4,"text":"Qualify\nLead","textPreview":"Qualify | Lead","textChars":12,"textLines":2,"bbox":[275,238,132,112]}
-{"kind":"shape","id":"sh/m58z25kb","slide":4,"bbox":[236,286,28,16]}
-{"kind":"textbox","id":"sh/twra5gbq","slide":4,"text":"Memory\nRecall","textPreview":"Memory | Recall","textChars":13,"textLines":2,"bbox":[460,238,132,112]}
-{"kind":"shape","id":"sh/4byhgn29","slide":4,"bbox":[421,286,28,16]}
-{"kind":"textbox","id":"sh/bm58z25k","slide":4,"text":"Real-device\nOutreach","textPreview":"Real-device | Outreach","textChars":20,"textLines":2,"bbox":[645,238,132,112]}
-{"kind":"shape","id":"sh/m1cfa9w3","slide":4,"bbox":[606,286,28,16]}
-{"kind":"textbox","id":"sh/cfa9w3m9","slide":4,"text":"Reply\nPolling","textPreview":"Reply | Polling","textChars":13,"textLines":2,"bbox":[830,238,132,112]}
-{"kind":"shape","id":"sh/1032lszq","slide":4,"bbox":[791,286,28,16]}
-{"kind":"textbox","id":"sh/u9knih4b","slide":4,"text":"Follow-up\nLoop","textPreview":"Follow-up | Loop","textChars":14,"textLines":2,"bbox":[1015,238,132,112]}
-{"kind":"shape","id":"sh/judg7ads","slide":4,"bbox":[976,286,28,16]}
-{"kind":"textbox","id":"sh/c7u54zid","slide":4,"text":"The agent role, industry scenario, tone, qualification fields, and follow-up strategy are configurable through playbooks.","textPreview":"The agent role, industry scenario, tone, qualification fields, and follow-up strategy are configurable through playbooks.","textChars":121,"textLines":1,"bbox":[162,452,956,72]}
-{"kind":"textbox","id":"sh/1orytsvu","slide":4,"text":"Agent 角色、行业场景、沟通语气、线索字段和跟进策略都可以配置。","textPreview":"Agent 角色、行业场景、沟通语气、线索字段和跟进策略都可以配置。","textChars":34,"textLines":1,"bbox":[230,532,820,30]}
-{"kind":"textbox","id":"sh/u18jqh0f","slide":4,"text":"Auto Lead Flow  /  4","textPreview":"Auto Lead Flow  /  4","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/5inb7k","slide":4,"text":"This is the product definition slide. Emphasize that real outreach is part of the workflow, not just a dashboard simulation."}
-{"kind":"slide","id":"sl/q0kjt2","slide":5,"title":"Demo: From Xiaohongshu Signal to Real Outreach","textShapes":22}
-{"kind":"textbox","id":"sh/crmhk3q5","slide":5,"text":"Demo: From Xiaohongshu Signal to Real Outreach","textPreview":"Demo: From Xiaohongshu Signal to Real Outreach","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/j6tovaho","slide":5,"text":"演示会展示从社交意图到真实私信触达，再到持续跟进的完整闭环。","textPreview":"演示会展示从社交意图到真实私信触达，再到持续跟进的完整闭环。","textChars":30,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"textbox","id":"sh/ulwval87","slide":5,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[104,238,44,44]}
-{"kind":"textbox","id":"sh/1kre1w7m","slide":5,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[74,300,170,34]}
-{"kind":"textbox","id":"sh/c3ylc7u5","slide":5,"text":"Find buyer intent in posts/comments","textPreview":"Find buyer intent in posts/comments","textChars":35,"textLines":1,"bbox":[70,334,178,84]}
-{"kind":"textbox","id":"sh/ji5snelo","slide":5,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[294,238,44,44]}
-{"kind":"textbox","id":"sh/uxc3ylc7","slide":5,"text":"Extract","textPreview":"Extract","textChars":7,"textLines":1,"bbox":[264,300,170,34]}
-{"kind":"textbox","id":"sh/1w7mp0bi","slide":5,"text":"Budget, location, layout, concerns","textPreview":"Budget, location, layout, concerns","textChars":34,"textLines":1,"bbox":[260,334,178,84]}
-{"kind":"shape","id":"sh/8bat47y1","slide":5,"bbox":[162,252,118,16]}
-{"kind":"textbox","id":"sh/ytsvu9kn","slide":5,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[484,238,44,44]}
-{"kind":"textbox","id":"sh/neloj2t8","slide":5,"text":"Score","textPreview":"Score","textChars":5,"textLines":1,"bbox":[454,300,170,34]}
-{"kind":"textbox","id":"sh/czed8v6p","slide":5,"text":"Decide whether the lead is worth outreach","textPreview":"Decide whether the lead is worth outreach","textChars":41,"textLines":1,"bbox":[450,334,178,84]}
-{"kind":"shape","id":"sh/5kb6xkf6","slide":5,"bbox":[352,252,118,16]}
-{"kind":"textbox","id":"sh/u54zidon","slide":5,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[674,238,44,44]}
-{"kind":"textbox","id":"sh/nqxs72x4","slide":5,"text":"Reach out","textPreview":"Reach out","textChars":9,"textLines":1,"bbox":[644,300,170,34]}
-{"kind":"textbox","id":"sh/cbulwval","slide":5,"text":"Send personalized DM through a real Android app","textPreview":"Send personalized DM through a real Android app","textChars":47,"textLines":1,"bbox":[640,334,178,84]}
-{"kind":"shape","id":"sh/5sneloj2","slide":5,"bbox":[542,252,118,16]}
-{"kind":"textbox","id":"sh/y90je9cv","slide":5,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[864,238,44,44]}
-{"kind":"textbox","id":"sh/nuxc3ylc","slide":5,"text":"Listen","textPreview":"Listen","textChars":6,"textLines":1,"bbox":[834,300,170,34]}
-{"kind":"textbox","id":"sh/fmlkjm1c","slide":5,"text":"Poll customer replies and sync transcript","textPreview":"Poll customer replies and sync transcript","textChars":41,"textLines":1,"bbox":[830,334,178,84]}
-{"kind":"shape","id":"sh/q1orytsv","slide":5,"bbox":[732,252,118,16]}
-{"kind":"textbox","id":"sh/xs72x4na","slide":5,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1054,238,44,44]}
-{"kind":"textbox","id":"sh/87ed8bat","slide":5,"text":"Continue","textPreview":"Continue","textChars":8,"textLines":1,"bbox":[1024,300,170,34]}
-{"kind":"textbox","id":"sh/je9cvixc","slide":5,"text":"Recall context and generate next follow-up","textPreview":"Recall context and generate next follow-up","textChars":42,"textLines":1,"bbox":[1020,334,178,84]}
-{"kind":"shape","id":"sh/qtcj6tov","slide":5,"bbox":[922,252,118,16]}
-{"kind":"textbox","id":"sh/1gvy90je","slide":5,"text":"Dashboard shows lead status, timeline, memory, outreach records, and verifiable artifacts.","textPreview":"Dashboard shows lead status, timeline, memory, outreach records, and verifiable artifacts.","textChars":90,"textLines":1,"bbox":[130,548,1020,40]}
-{"kind":"textbox","id":"sh/8z25kb6x","slide":5,"text":"Auto Lead Flow  /  5","textPreview":"Auto Lead Flow  /  5","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/q0kjt2","slide":5,"text":"This slide maps directly to the live demo order. Keep it moving: discover, extract, score, send, poll, continue."}
-{"kind":"slide","id":"sl/hg2o4a","slide":6,"title":"Core Capabilities","textShapes":11}
-{"kind":"textbox","id":"sh/5kb6xkf6","slide":6,"text":"Core Capabilities","textPreview":"Core Capabilities","textChars":17,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/ytsvu9kn","slide":6,"text":"围绕社交获客真实工作流，而不是只做 CRM 页面。","textPreview":"围绕社交获客真实工作流，而不是只做 CRM 页面。","textChars":25,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"shape","id":"sh/neloj2t8","slide":6,"bbox":[94,164,500,170]}
-{"kind":"shape","id":"sh/cbulwval","slide":6,"bbox":[94,164,7,170]}
-{"kind":"textbox","id":"sh/5sneloj2","slide":6,"text":"Social Lead Discovery","textPreview":"Social Lead Discovery","textChars":21,"textLines":1,"bbox":[120,188,452,34]}
-{"kind":"textbox","id":"sh/u54zidon","slide":6,"text":"Search posts and comments for buying intent, then turn unstructured social content into leads.","textPreview":"Search posts and comments for buying intent, then turn unstructured social content into leads.","textChars":94,"textLines":1,"bbox":[120,232,448,84]}
-{"kind":"shape","id":"sh/nqxs72x4","slide":6,"bbox":[686,164,500,170]}
-{"kind":"shape","id":"sh/gbq1oryt","slide":6,"bbox":[686,164,7,170]}
-{"kind":"textbox","id":"sh/5wjudg7a","slide":6,"text":"Real-device Outreach","textPreview":"Real-device Outreach","textChars":20,"textLines":1,"bbox":[712,188,452,34]}
-{"kind":"textbox","id":"sh/54zidony","slide":6,"text":"Send first-touch private messages through a real social app account on a real Android phone.","textPreview":"Send first-touch private messages through a real social app account on a real Android phone.","textChars":92,"textLines":1,"bbox":[712,232,448,84]}
-{"kind":"shape","id":"sh/cj6tovah","slide":6,"bbox":[94,398,500,170]}
-{"kind":"shape","id":"sh/nyd0z610","slide":6,"bbox":[94,398,7,170]}
-{"kind":"textbox","id":"sh/udg7adsj","slide":6,"text":"Configurable Industry Agent","textPreview":"Configurable Industry Agent","textChars":27,"textLines":1,"bbox":[120,422,452,34]}
-{"kind":"textbox","id":"sh/5gbq1ory","slide":6,"text":"Use playbooks to configure role, tone, qualification fields, and follow-up strategy.","textPreview":"Use playbooks to configure role, tone, qualification fields, and follow-up strategy.","textChars":84,"textLines":1,"bbox":[120,466,448,84]}
-{"kind":"shape","id":"sh/cvixczed","slide":6,"bbox":[686,398,500,170]}
-{"kind":"shape","id":"sh/nap4r65w","slide":6,"bbox":[686,398,7,170]}
-{"kind":"textbox","id":"sh/upwb2hwf","slide":6,"text":"Long-term Follow-up","textPreview":"Long-term Follow-up","textChars":19,"textLines":1,"bbox":[712,422,452,34]}
-{"kind":"textbox","id":"sh/1orytsvu","slide":6,"text":"Recall customer context across sessions and workers, then continue multi-touch conversion.","textPreview":"Recall customer context across sessions and workers, then continue multi-touch conversion.","textChars":90,"textLines":1,"bbox":[712,466,448,84]}
-{"kind":"textbox","id":"sh/c7u54zid","slide":6,"text":"Auto Lead Flow  /  6","textPreview":"Auto Lead Flow  /  6","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/hg2o4a","slide":6,"text":"The core capability list should make judges remember the differentiators: discovery, phone outreach, configurable playbooks, memory-driven follow-up."}
-{"kind":"slide","id":"sl/wwu8k3","slide":7,"title":"Why Walrus: Make Agent Actions Verifiable","textShapes":10}
-{"kind":"textbox","id":"sh/18jqh0fe","slide":7,"text":"Why Walrus: Make Agent Actions Verifiable","textPreview":"Why Walrus: Make Agent Actions Verifiable","textChars":41,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/qh0fepkz","slide":7,"text":"Agent 自动化不是黑箱，每一步业务动作都能留下可验证记录。","textPreview":"Agent 自动化不是黑箱，每一步业务动作都能留下可验证记录。","textChars":31,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"textbox","id":"sh/j2t83itg","slide":7,"text":"Black-box\nautomation","textPreview":"Black-box | automation","textChars":20,"textLines":2,"bbox":[94,214,420,220]}
-{"kind":"textbox","id":"sh/8bat47y1","slide":7,"text":"Verifiable\nbusiness records","textPreview":"Verifiable | business records","textChars":27,"textLines":2,"bbox":[764,214,420,220]}
-{"kind":"shape","id":"sh/1w7mp0bi","slide":7,"bbox":[528,316,222,16]}
-{"kind":"textbox","id":"sh/q5o7qpg3","slide":7,"text":"Source evidence","textPreview":"Source evidence","textChars":15,"textLines":1,"bbox":[156,520,190,34]}
-{"kind":"textbox","id":"sh/jqh0fepk","slide":7,"text":"Scoring report","textPreview":"Scoring report","textChars":14,"textLines":1,"bbox":[406,520,190,34]}
-{"kind":"textbox","id":"sh/c3ylc7u5","slide":7,"text":"Outreach decision","textPreview":"Outreach decision","textChars":17,"textLines":1,"bbox":[656,520,190,34]}
-{"kind":"textbox","id":"sh/1kre1w7m","slide":7,"text":"Trace + handoff proof","textPreview":"Trace + handoff proof","textChars":21,"textLines":1,"bbox":[906,520,190,34]}
-{"kind":"textbox","id":"sh/5o7qpg3e","slide":7,"text":"Walrus stores immutable artifacts that explain what the agent saw, decided, sent, and handed off.","textPreview":"Walrus stores immutable artifacts that explain what the agent saw, decided, sent, and handed off.","textChars":97,"textLines":1,"bbox":[160,462,960,34]}
-{"kind":"textbox","id":"sh/g3ex0nux","slide":7,"text":"Auto Lead Flow  /  7","textPreview":"Auto Lead Flow  /  7","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/wwu8k3","slide":7,"text":"Frame Walrus as business trust: source proof, decision proof, trace proof, and handoff proof."}
-{"kind":"slide","id":"sl/5zf22t","slide":8,"title":"Beyond Real Estate","textShapes":12}
-{"kind":"textbox","id":"sh/9knih4by","slide":8,"text":"Beyond Real Estate","textPreview":"Beyond Real Estate","textChars":18,"textLines":1,"bbox":[64,56,950,76]}
-{"kind":"textbox","id":"sh/2t83itgf","slide":8,"text":"当前 demo 是小红书 + 房产销售，但系统边界是可配置行业获客 Agent。","textPreview":"当前 demo 是小红书 + 房产销售，但系统边界是可配置行业获客 Agent。","textChars":40,"textLines":1,"bbox":[64,120,900,40]}
-{"kind":"textbox","id":"sh/re1w7mp0","slide":8,"text":"Playbook-configured\nSales Agent","textPreview":"Playbook-configured | Sales Agent","textChars":31,"textLines":2,"bbox":[450,196,380,168]}
-{"kind":"textbox","id":"sh/kb6xkf6d","slide":8,"text":"Real Estate","textPreview":"Real Estate","textChars":11,"textLines":1,"bbox":[92,438,190,34]}
-{"kind":"textbox","id":"sh/9w3m94fu","slide":8,"text":"Automotive","textPreview":"Automotive","textChars":10,"textLines":1,"bbox":[274,438,150,34]}
-{"kind":"textbox","id":"sh/25kb6xkf","slide":8,"text":"Education","textPreview":"Education","textChars":9,"textLines":1,"bbox":[456,438,150,34]}
-{"kind":"textbox","id":"sh/rqd4vmtw","slide":8,"text":"Insurance","textPreview":"Insurance","textChars":9,"textLines":1,"bbox":[638,438,150,34]}
-{"kind":"textbox","id":"sh/kjm1cfa9","slide":8,"text":"Home Renovation","textPreview":"Home Renovation","textChars":15,"textLines":1,"bbox":[820,438,190,34]}
-{"kind":"textbox","id":"sh/94fu18jq","slide":8,"text":"B2B SaaS","textPreview":"B2B SaaS","textChars":8,"textLines":1,"bbox":[1038,438,150,34]}
-{"kind":"textbox","id":"sh/1orytsvu","slide":8,"text":"Scenario playbooks","textPreview":"Scenario playbooks","textChars":18,"textLines":1,"bbox":[470,392,340,28]}
-{"kind":"textbox","id":"sh/c7u54zid","slide":8,"text":"Any high-consideration sales workflow with social intent, repeated outreach, and long decision cycles can adapt the same engine.","textPreview":"Any high-consideration sales workflow with social intent, repeated outreach, and long decision cycles can adapt the same engine.","textChars":128,"textLines":1,"bbox":[200,612,880,34]}
-{"kind":"textbox","id":"sh/jm1cfa9w","slide":8,"text":"Auto Lead Flow  /  8","textPreview":"Auto Lead Flow  /  8","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
-{"kind":"notes","id":"nt/5zf22t","slide":8,"text":"The point is extensibility: configure fields and strategy through playbooks rather than hardcoding real estate forever."}
-{"kind":"slide","id":"sl/xvvy6v","slide":9,"title":"Turn Social Intent","textShapes":7}
-{"kind":"textbox","id":"sh/gbq1oryt","slide":9,"text":"Turn Social Intent\ninto Verifiable Outreach","textPreview":"Turn Social Intent | into Verifiable Outreach","textChars":43,"textLines":2,"bbox":[390,116,760,160]}
-{"kind":"textbox","id":"sh/5wjudg7a","slide":9,"text":"Discover, qualify, reach out, and follow up with high-intent social leads automatically.","textPreview":"Discover, qualify, reach out, and follow up with high-intent social leads automatically.","textChars":88,"textLines":1,"bbox":[394,318,720,60]}
-{"kind":"textbox","id":"sh/yhgn29gr","slide":9,"text":"把社交平台上的购买意向，自动转化为可验证、可持续跟进的客户触达","textPreview":"把社交平台上的购买意向，自动转化为可验证、可持续跟进的客户触达","textChars":31,"textLines":1,"bbox":[394,414,800,36]}
-{"kind":"textbox","id":"sh/n29gr2p8","slide":9,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[394,526,118,34]}
-{"kind":"textbox","id":"sh/gn29gr2p","slide":9,"text":"Qualify","textPreview":"Qualify","textChars":7,"textLines":1,"bbox":[544,526,118,34]}
-{"kind":"shape","id":"sh/58z25kb6","slide":9,"bbox":[526,535,28,16]}
-{"kind":"textbox","id":"sh/ytsvu9kn","slide":9,"text":"Outreach","textPreview":"Outreach","textChars":8,"textLines":1,"bbox":[694,526,118,34]}
-{"kind":"shape","id":"sh/neloj2t8","slide":9,"bbox":[676,535,28,16]}
-{"kind":"textbox","id":"sh/nap4r65w","slide":9,"text":"Follow-up","textPreview":"Follow-up","textChars":9,"textLines":1,"bbox":[844,526,118,34]}
-{"kind":"shape","id":"sh/upwb2hwf","slide":9,"bbox":[826,535,28,16]}
-{"kind":"image","id":"im/61032lsz","slide":9,"name":"","alt":"Auto Lead Flow logo","bbox":[78,96,260,260]}
-{"kind":"notes","id":"nt/xvvy6v","slide":9,"text":"Close by repeating the one-line message. Auto Lead Flow converts social intent into real, verifiable outreach."}
+{"kind":"deck","id":"pr/e2exzt","name":"Deck"}
+{"kind":"layout","layoutId":"2748ee23-1fe4-4b8c-ac5f-756e7fb77b3a","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"50ad4c9c-4f9e-4a7a-95ab-8527704254c5","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/j87fsx","slide":1,"title":"Auto Lead Flow","textShapes":7}
+{"kind":"textbox","id":"sh/dsji5sne","slide":1,"text":"Auto Lead Flow","textPreview":"Auto Lead Flow","textChars":14,"textLines":1,"bbox":[82,130,660,86]}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":1,"text":"Verifiable Social Lead Automation\nfor Configurable Sales Agents","textPreview":"Verifiable Social Lead Automation | for Configurable Sales Agents","textChars":63,"textLines":2,"bbox":[86,232,650,94]}
+{"kind":"textbox","id":"sh/vy90je9c","slide":1,"text":"Automated social lead discovery, real outreach, and persistent follow-up","textPreview":"Automated social lead discovery, real outreach, and persistent follow-up","textChars":72,"textLines":1,"bbox":[88,350,620,52]}
+{"kind":"textbox","id":"sh/6dcbulwv","slide":1,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[88,480,118,34]}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":1,"text":"Qualify","textPreview":"Qualify","textChars":7,"textLines":1,"bbox":[238,480,118,34]}
+{"kind":"shape","id":"sh/oj2t83it","slide":1,"bbox":[220,489,28,16]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":1,"text":"Outreach","textPreview":"Outreach","textChars":8,"textLines":1,"bbox":[388,480,118,34]}
+{"kind":"shape","id":"sh/6hcrmhk3","slide":1,"bbox":[370,489,28,16]}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":1,"text":"Follow-up","textPreview":"Follow-up","textChars":9,"textLines":1,"bbox":[538,480,118,34]}
+{"kind":"shape","id":"sh/9cvixcze","slide":1,"bbox":[520,489,28,16]}
+{"kind":"image","id":"im/3q5o7qpg","slide":1,"name":"","alt":"Auto Lead Flow logo","bbox":[770,88,360,360]}
+{"kind":"notes","id":"nt/j87fsx","slide":1,"text":"Open with the simple story: social intent already exists online, but sales teams still find and message people manually. Auto Lead Flow automates discovery, qualification, real-phone outreach, and follow-up."}
+{"kind":"slide","id":"sl/u73dvk","slide":2,"title":"Social Lead Generation Is Still Too Manual","textShapes":10}
+{"kind":"textbox","id":"sh/qd4vmtwr","slide":2,"text":"Social Lead Generation Is Still Too Manual","textPreview":"Social Lead Generation Is Still Too Manual","textChars":42,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":2,"text":"Social acquisition still depends on manual search, judgment, and repeated outreach.","textPreview":"Social acquisition still depends on manual search, judgment, and repeated outreach.","textChars":83,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"shape","id":"sh/8jqh0fep","slide":2,"bbox":[78,188,340,292]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":2,"bbox":[78,188,7,292]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":2,"text":"Manual discovery","textPreview":"Manual discovery","textChars":16,"textLines":1,"bbox":[104,212,292,34]}
+{"kind":"textbox","id":"sh/xczed8v6","slide":2,"text":"Sales teams scroll posts and comments to find people who may be ready to buy.","textPreview":"Sales teams scroll posts and comments to find people who may be ready to buy.","textChars":77,"textLines":1,"bbox":[104,256,288,206]}
+{"kind":"shape","id":"sh/8v6psfil","slide":2,"bbox":[470,188,340,292]}
+{"kind":"shape","id":"sh/je9cvixc","slide":2,"bbox":[470,188,7,292]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":2,"text":"Scattered context","textPreview":"Scattered context","textChars":17,"textLines":1,"bbox":[496,212,292,34]}
+{"kind":"textbox","id":"sh/svu9knih","slide":2,"text":"Budget, location, urgency, concerns, and past replies are split across conversations.","textPreview":"Budget, location, urgency, concerns, and past replies are split across conversations.","textChars":85,"textLines":1,"bbox":[496,256,288,206]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":2,"bbox":[862,188,340,292]}
+{"kind":"shape","id":"sh/ap4r65wj","slide":2,"bbox":[862,188,7,292]}
+{"kind":"textbox","id":"sh/za1gvy90","slide":2,"text":"Hard to audit","textPreview":"Hard to audit","textChars":13,"textLines":1,"bbox":[888,212,292,34]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":2,"text":"It is difficult to prove why a lead was scored or why a message was sent.","textPreview":"It is difficult to prove why a lead was scored or why a message was sent.","textChars":73,"textLines":1,"bbox":[888,256,288,206]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":2,"text":"High-frequency work, low automation, fragile memory.","textPreview":"High-frequency work, low automation, fragile memory.","textChars":52,"textLines":1,"bbox":[120,552,1040,42]}
+{"kind":"textbox","id":"sh/a1gvy90j","slide":2,"text":"Auto Lead Flow  /  2","textPreview":"Auto Lead Flow  /  2","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/u73dvk","slide":2,"text":"Use this slide to anchor the pain. The customer problem is not just CRM storage: the manual work starts on social platforms before the lead exists in a CRM."}
+{"kind":"slide","id":"sl/t2fa5u","slide":3,"title":"High-intent Leads Already Express Needs Online","textShapes":16}
+{"kind":"textbox","id":"sh/58z25kb6","slide":3,"text":"High-intent Leads Already Express Needs Online","textPreview":"High-intent Leads Already Express Needs Online","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":3,"text":"Many potential customers already reveal clear buying needs in social content.","textPreview":"Many potential customers already reveal clear buying needs in social content.","textChars":77,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"shape","id":"sh/n29gr2p8","slide":3,"bbox":[92,172,548,328]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":3,"text":"Xiaohongshu post / comment","textPreview":"Xiaohongshu post / comment","textChars":26,"textLines":1,"bbox":[124,204,320,26]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":3,"text":"\"Looking for a three-bedroom near the High-Tech District. Budget matters, and commute should be easy.\"","textPreview":"\"Looking for a three-bedroom near the High-Tech District. Budget matters, and commute should be easy.\"","textChars":102,"textLines":1,"bbox":[124,250,456,142]}
+{"kind":"textbox","id":"sh/y90je9cv","slide":3,"text":"This is not a cold lead. It is a visible buying signal.","textPreview":"This is not a cold lead. It is a visible buying signal.","textChars":55,"textLines":1,"bbox":[124,408,430,34]}
+{"kind":"shape","id":"sh/nuxc3ylc","slide":3,"bbox":[718,168,410,52]}
+{"kind":"textbox","id":"sh/cbulwval","slide":3,"text":"Budget","textPreview":"Budget","textChars":6,"textLines":1,"bbox":[744,180,130,24]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":3,"text":"price-sensitive","textPreview":"price-sensitive","textChars":15,"textLines":1,"bbox":[884,181,210,24]}
+{"kind":"shape","id":"sh/tcj6tova","slide":3,"bbox":[718,240,410,52]}
+{"kind":"textbox","id":"sh/0rqd4vmt","slide":3,"text":"Location","textPreview":"Location","textChars":8,"textLines":1,"bbox":[744,252,130,24]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":3,"text":"high-tech district","textPreview":"high-tech district","textChars":18,"textLines":1,"bbox":[884,253,210,24]}
+{"kind":"shape","id":"sh/il0rqd4v","slide":3,"bbox":[718,312,410,52]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":3,"text":"Layout","textPreview":"Layout","textChars":6,"textLines":1,"bbox":[744,324,130,24]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":3,"text":"three-bedroom","textPreview":"three-bedroom","textChars":13,"textLines":1,"bbox":[884,325,210,24]}
+{"kind":"shape","id":"sh/byhgn29g","slide":3,"bbox":[718,384,410,52]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":3,"text":"Concern","textPreview":"Concern","textChars":7,"textLines":1,"bbox":[744,396,130,24]}
+{"kind":"textbox","id":"sh/p0bi9s36","slide":3,"text":"commute","textPreview":"commute","textChars":7,"textLines":1,"bbox":[884,397,210,24]}
+{"kind":"shape","id":"sh/0fepkzup","slide":3,"bbox":[718,456,410,52]}
+{"kind":"textbox","id":"sh/cbulwval","slide":3,"text":"Intent","textPreview":"Intent","textChars":6,"textLines":1,"bbox":[744,468,130,24]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":3,"text":"active buyer","textPreview":"active buyer","textChars":12,"textLines":1,"bbox":[884,469,210,24]}
+{"kind":"textbox","id":"sh/u54zidon","slide":3,"text":"Auto Lead Flow  /  3","textPreview":"Auto Lead Flow  /  3","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/t2fa5u","slide":3,"text":"The demo scenario starts from a concrete social signal. The system turns unstructured text into a structured lead profile."}
+{"kind":"slide","id":"sl/zmak33","slide":4,"title":"Auto Lead Flow: From Social Intent to Outreach","textShapes":11}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":4,"text":"Auto Lead Flow: From Social Intent to Outreach","textPreview":"Auto Lead Flow: From Social Intent to Outreach","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/83itgfml","slide":4,"text":"A configurable sales-agent workflow for discovery, qualification, real outreach, and follow-up.","textPreview":"A configurable sales-agent workflow for discovery, qualification, real outreach, and follow-up.","textChars":95,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":4,"text":"Social\nListening","textPreview":"Social | Listening","textChars":16,"textLines":2,"bbox":[90,238,132,112]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":4,"text":"Qualify\nLead","textPreview":"Qualify | Lead","textChars":12,"textLines":2,"bbox":[275,238,132,112]}
+{"kind":"shape","id":"sh/fu18jqh0","slide":4,"bbox":[236,286,28,16]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":4,"text":"Memory\nRecall","textPreview":"Memory | Recall","textChars":13,"textLines":2,"bbox":[460,238,132,112]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":4,"bbox":[421,286,28,16]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":4,"text":"Real-device\nOutreach","textPreview":"Real-device | Outreach","textChars":20,"textLines":2,"bbox":[645,238,132,112]}
+{"kind":"shape","id":"sh/f6dcbulw","slide":4,"bbox":[606,286,28,16]}
+{"kind":"textbox","id":"sh/vixczed8","slide":4,"text":"Reply\nPolling","textPreview":"Reply | Polling","textChars":13,"textLines":2,"bbox":[830,238,132,112]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":4,"bbox":[791,286,28,16]}
+{"kind":"textbox","id":"sh/donyd0z6","slide":4,"text":"Follow-up\nLoop","textPreview":"Follow-up | Loop","textChars":14,"textLines":2,"bbox":[1015,238,132,112]}
+{"kind":"shape","id":"sh/k3q5o7qp","slide":4,"bbox":[976,286,28,16]}
+{"kind":"textbox","id":"sh/val87ed8","slide":4,"text":"The agent role, industry scenario, tone, qualification fields, and follow-up strategy are configurable through playbooks.","textPreview":"The agent role, industry scenario, tone, qualification fields, and follow-up strategy are configurable through playbooks.","textChars":121,"textLines":1,"bbox":[162,452,956,72]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":4,"text":"Playbooks make the same engine adaptable across real estate and other social lead-generation scenarios.","textPreview":"Playbooks make the same engine adaptable across real estate and other social lead-generation scenarios.","textChars":103,"textLines":1,"bbox":[190,532,900,34]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":4,"text":"Auto Lead Flow  /  4","textPreview":"Auto Lead Flow  /  4","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/zmak33","slide":4,"text":"This is the product definition slide. Emphasize that real outreach is part of the workflow, not just a dashboard simulation."}
+{"kind":"slide","id":"sl/cfa45t","slide":5,"title":"Demo: From Xiaohongshu Signal to Real Outreach","textShapes":22}
+{"kind":"textbox","id":"sh/tcj6tova","slide":5,"text":"Demo: From Xiaohongshu Signal to Real Outreach","textPreview":"Demo: From Xiaohongshu Signal to Real Outreach","textChars":46,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":5,"text":"The demo shows the complete loop from social intent to real DM outreach and continued follow-up.","textPreview":"The demo shows the complete loop from social intent to real DM outreach and continued follow-up.","textChars":96,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":5,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[104,238,44,44]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":5,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[74,300,170,34]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":5,"text":"Find buyer intent in posts/comments","textPreview":"Find buyer intent in posts/comments","textChars":35,"textLines":1,"bbox":[70,334,178,84]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":5,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[294,238,44,44]}
+{"kind":"textbox","id":"sh/byhgn29g","slide":5,"text":"Extract","textPreview":"Extract","textChars":7,"textLines":1,"bbox":[264,300,170,34]}
+{"kind":"textbox","id":"sh/0fepkzup","slide":5,"text":"Budget, location, layout, concerns","textPreview":"Budget, location, layout, concerns","textChars":34,"textLines":1,"bbox":[260,334,178,84]}
+{"kind":"shape","id":"sh/p0bi9s36","slide":5,"bbox":[162,252,118,16]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":5,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[484,238,44,44]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":5,"text":"Score","textPreview":"Score","textChars":5,"textLines":1,"bbox":[454,300,170,34]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":5,"text":"Decide whether the lead is worth outreach","textPreview":"Decide whether the lead is worth outreach","textChars":41,"textLines":1,"bbox":[450,334,178,84]}
+{"kind":"shape","id":"sh/m94fu18j","slide":5,"bbox":[352,252,118,16]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":5,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[674,238,44,44]}
+{"kind":"textbox","id":"sh/83itgfml","slide":5,"text":"Reach out","textPreview":"Reach out","textChars":9,"textLines":1,"bbox":[644,300,170,34]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":5,"text":"Send personalized DM through a real Android app","textPreview":"Send personalized DM through a real Android app","textChars":47,"textLines":1,"bbox":[640,334,178,84]}
+{"kind":"shape","id":"sh/qxs72x4n","slide":5,"bbox":[542,252,118,16]}
+{"kind":"textbox","id":"sh/xkf6dcbu","slide":5,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[864,238,44,44]}
+{"kind":"textbox","id":"sh/4zidonyd","slide":5,"text":"Listen","textPreview":"Listen","textChars":6,"textLines":1,"bbox":[834,300,170,34]}
+{"kind":"textbox","id":"sh/0fepkzup","slide":5,"text":"Poll customer replies and sync transcript","textPreview":"Poll customer replies and sync transcript","textChars":41,"textLines":1,"bbox":[830,334,178,84]}
+{"kind":"shape","id":"sh/p0bi9s36","slide":5,"bbox":[732,252,118,16]}
+{"kind":"textbox","id":"sh/i9s36hcr","slide":5,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1054,238,44,44]}
+{"kind":"textbox","id":"sh/bulwval8","slide":5,"text":"Continue","textPreview":"Continue","textChars":8,"textLines":1,"bbox":[1024,300,170,34]}
+{"kind":"textbox","id":"sh/032lszqt","slide":5,"text":"Recall context and generate next follow-up","textPreview":"Recall context and generate next follow-up","textChars":42,"textLines":1,"bbox":[1020,334,178,84]}
+{"kind":"shape","id":"sh/tovahoza","slide":5,"bbox":[922,252,118,16]}
+{"kind":"textbox","id":"sh/ixczed8v","slide":5,"text":"Dashboard shows lead status, timeline, memory, outreach records, and verifiable artifacts.","textPreview":"Dashboard shows lead status, timeline, memory, outreach records, and verifiable artifacts.","textChars":90,"textLines":1,"bbox":[130,548,1020,40]}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":5,"text":"Auto Lead Flow  /  5","textPreview":"Auto Lead Flow  /  5","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/cfa45t","slide":5,"text":"This slide maps directly to the live demo order. Keep it moving: discover, extract, score, send, poll, continue."}
+{"kind":"slide","id":"sl/gh33a3","slide":6,"title":"Core Capabilities","textShapes":11}
+{"kind":"textbox","id":"sh/tovahoza","slide":6,"text":"Core Capabilities","textPreview":"Core Capabilities","textChars":17,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/ixczed8v","slide":6,"text":"Built around the real social acquisition workflow, not just a CRM screen.","textPreview":"Built around the real social acquisition workflow, not just a CRM screen.","textChars":73,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"shape","id":"sh/bi9s36hc","slide":6,"bbox":[94,164,500,170]}
+{"kind":"shape","id":"sh/0fepkzup","slide":6,"bbox":[94,164,7,170]}
+{"kind":"textbox","id":"sh/p0bi9s36","slide":6,"text":"Social Lead Discovery","textPreview":"Social Lead Discovery","textChars":21,"textLines":1,"bbox":[120,188,452,34]}
+{"kind":"textbox","id":"sh/i9s36hcr","slide":6,"text":"Search posts and comments for buying intent, then turn unstructured social content into leads.","textPreview":"Search posts and comments for buying intent, then turn unstructured social content into leads.","textChars":94,"textLines":1,"bbox":[120,232,448,84]}
+{"kind":"shape","id":"sh/bulwval8","slide":6,"bbox":[686,164,500,170]}
+{"kind":"shape","id":"sh/0je9cvix","slide":6,"bbox":[686,164,7,170]}
+{"kind":"textbox","id":"sh/t47y1kre","slide":6,"text":"Real-device Outreach","textPreview":"Real-device Outreach","textChars":20,"textLines":1,"bbox":[712,188,452,34]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":6,"text":"Send first-touch private messages through a real social app account on a real Android phone.","textPreview":"Send first-touch private messages through a real social app account on a real Android phone.","textChars":92,"textLines":1,"bbox":[712,232,448,84]}
+{"kind":"shape","id":"sh/g7adsji5","slide":6,"bbox":[94,398,500,170]}
+{"kind":"shape","id":"sh/rmhk3q5o","slide":6,"bbox":[94,398,7,170]}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":6,"text":"Configurable Industry Agent","textPreview":"Configurable Industry Agent","textChars":27,"textLines":1,"bbox":[120,422,452,34]}
+{"kind":"textbox","id":"sh/90je9cvi","slide":6,"text":"Use playbooks to configure role, tone, qualification fields, and follow-up strategy.","textPreview":"Use playbooks to configure role, tone, qualification fields, and follow-up strategy.","textChars":84,"textLines":1,"bbox":[120,466,448,84]}
+{"kind":"shape","id":"sh/gfmlkjm1","slide":6,"bbox":[686,398,500,170]}
+{"kind":"shape","id":"sh/rytsvu9k","slide":6,"bbox":[686,398,7,170]}
+{"kind":"textbox","id":"sh/yd0z6103","slide":6,"text":"Long-term Follow-up","textPreview":"Long-term Follow-up","textChars":19,"textLines":1,"bbox":[712,422,452,34]}
+{"kind":"textbox","id":"sh/9cvixcze","slide":6,"text":"Recall customer context across sessions and workers, then continue multi-touch conversion.","textPreview":"Recall customer context across sessions and workers, then continue multi-touch conversion.","textChars":90,"textLines":1,"bbox":[712,466,448,84]}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":6,"text":"Auto Lead Flow  /  6","textPreview":"Auto Lead Flow  /  6","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/gh33a3","slide":6,"text":"The core capability list should make judges remember the differentiators: discovery, phone outreach, configurable playbooks, memory-driven follow-up."}
+{"kind":"slide","id":"sl/2ev3ib","slide":7,"title":"Why Walrus: Make Agent Actions Verifiable","textShapes":10}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":7,"text":"Why Walrus: Make Agent Actions Verifiable","textPreview":"Why Walrus: Make Agent Actions Verifiable","textChars":41,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/itgfmlkj","slide":7,"text":"Agent automation should not be a black box; every business action can leave a verifiable record.","textPreview":"Agent automation should not be a black box; every business action can leave a verifiable record.","textChars":96,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":7,"text":"Black-box\nautomation","textPreview":"Black-box | automation","textChars":20,"textLines":2,"bbox":[94,214,420,220]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":7,"text":"Verifiable\nbusiness records","textPreview":"Verifiable | business records","textChars":27,"textLines":2,"bbox":[764,214,420,220]}
+{"kind":"shape","id":"sh/p8nqxs72","slide":7,"bbox":[528,316,222,16]}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":7,"text":"Source evidence","textPreview":"Source evidence","textChars":15,"textLines":1,"bbox":[156,520,190,34]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":7,"text":"Scoring report","textPreview":"Scoring report","textChars":14,"textLines":1,"bbox":[406,520,190,34]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":7,"text":"Outreach decision","textPreview":"Outreach decision","textChars":17,"textLines":1,"bbox":[656,520,190,34]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":7,"text":"Trace + handoff proof","textPreview":"Trace + handoff proof","textChars":21,"textLines":1,"bbox":[906,520,190,34]}
+{"kind":"textbox","id":"sh/lwval87e","slide":7,"text":"Walrus stores immutable artifacts that explain what the agent saw, decided, sent, and handed off.","textPreview":"Walrus stores immutable artifacts that explain what the agent saw, decided, sent, and handed off.","textChars":97,"textLines":1,"bbox":[160,462,960,34]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":7,"text":"Auto Lead Flow  /  7","textPreview":"Auto Lead Flow  /  7","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/2ev3ib","slide":7,"text":"Frame Walrus as business trust: source proof, decision proof, trace proof, and handoff proof."}
+{"kind":"slide","id":"sl/dnh8af","slide":8,"title":"Beyond Real Estate","textShapes":12}
+{"kind":"textbox","id":"sh/t83itgfm","slide":8,"text":"Beyond Real Estate","textPreview":"Beyond Real Estate","textChars":18,"textLines":1,"bbox":[64,56,950,76]}
+{"kind":"textbox","id":"sh/mhk3q5o7","slide":8,"text":"The demo starts with Xiaohongshu and real-estate sales, but the system is a configurable industry lead agent.","textPreview":"The demo starts with Xiaohongshu and real-estate sales, but the system is a configurable industry lead agent.","textChars":109,"textLines":1,"bbox":[64,120,900,40]}
+{"kind":"textbox","id":"sh/b2hwfyxo","slide":8,"text":"Playbook-configured\nSales Agent","textPreview":"Playbook-configured | Sales Agent","textChars":31,"textLines":2,"bbox":[450,196,380,168]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":8,"text":"Real Estate","textPreview":"Real Estate","textChars":11,"textLines":1,"bbox":[92,438,190,34]}
+{"kind":"textbox","id":"sh/twra5gbq","slide":8,"text":"Automotive","textPreview":"Automotive","textChars":10,"textLines":1,"bbox":[274,438,150,34]}
+{"kind":"textbox","id":"sh/m58z25kb","slide":8,"text":"Education","textPreview":"Education","textChars":9,"textLines":1,"bbox":[456,438,150,34]}
+{"kind":"textbox","id":"sh/bq1oryts","slide":8,"text":"Insurance","textPreview":"Insurance","textChars":9,"textLines":1,"bbox":[638,438,150,34]}
+{"kind":"textbox","id":"sh/47y1kre1","slide":8,"text":"Home Renovation","textPreview":"Home Renovation","textChars":15,"textLines":1,"bbox":[820,438,190,34]}
+{"kind":"textbox","id":"sh/tsvu9kni","slide":8,"text":"B2B SaaS","textPreview":"B2B SaaS","textChars":8,"textLines":1,"bbox":[1038,438,150,34]}
+{"kind":"textbox","id":"sh/90je9cvi","slide":8,"text":"Scenario playbooks","textPreview":"Scenario playbooks","textChars":18,"textLines":1,"bbox":[470,392,340,28]}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":8,"text":"Any high-consideration sales workflow with social intent, repeated outreach, and long decision cycles can adapt the same engine.","textPreview":"Any high-consideration sales workflow with social intent, repeated outreach, and long decision cycles can adapt the same engine.","textChars":128,"textLines":1,"bbox":[200,612,880,34]}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":8,"text":"Auto Lead Flow  /  8","textPreview":"Auto Lead Flow  /  8","textChars":20,"textLines":1,"bbox":[64,686,240,18]}
+{"kind":"notes","id":"nt/dnh8af","slide":8,"text":"The point is extensibility: configure fields and strategy through playbooks rather than hardcoding real estate forever."}
+{"kind":"slide","id":"sl/lr82o0","slide":9,"title":"Turn Social Intent","textShapes":7}
+{"kind":"textbox","id":"sh/4zidonyd","slide":9,"text":"Turn Social Intent\ninto Verifiable Outreach","textPreview":"Turn Social Intent | into Verifiable Outreach","textChars":43,"textLines":2,"bbox":[390,116,760,160]}
+{"kind":"textbox","id":"sh/xkf6dcbu","slide":9,"text":"Discover, qualify, reach out, and follow up with high-intent social leads automatically.","textPreview":"Discover, qualify, reach out, and follow up with high-intent social leads automatically.","textChars":88,"textLines":1,"bbox":[394,318,720,60]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":9,"text":"Social buying intent becomes verifiable, persistent customer outreach.","textPreview":"Social buying intent becomes verifiable, persistent customer outreach.","textChars":70,"textLines":1,"bbox":[394,414,800,36]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":9,"text":"Discover","textPreview":"Discover","textChars":8,"textLines":1,"bbox":[394,526,118,34]}
+{"kind":"textbox","id":"sh/4r65wjud","slide":9,"text":"Qualify","textPreview":"Qualify","textChars":7,"textLines":1,"bbox":[544,526,118,34]}
+{"kind":"shape","id":"sh/xc3ylc7u","slide":9,"bbox":[526,535,28,16]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":9,"text":"Outreach","textPreview":"Outreach","textChars":8,"textLines":1,"bbox":[694,526,118,34]}
+{"kind":"shape","id":"sh/fu18jqh0","slide":9,"bbox":[676,535,28,16]}
+{"kind":"textbox","id":"sh/r65wjudg","slide":9,"text":"Follow-up","textPreview":"Follow-up","textChars":9,"textLines":1,"bbox":[844,526,118,34]}
+{"kind":"shape","id":"sh/ylc7u54z","slide":9,"bbox":[826,535,28,16]}
+{"kind":"image","id":"im/i9s36hcr","slide":9,"name":"","alt":"Auto Lead Flow logo","bbox":[78,96,260,260]}
+{"kind":"notes","id":"nt/lr82o0","slide":9,"text":"Close by repeating the one-line message. Auto Lead Flow converts social intent into real, verifiable outreach."}
