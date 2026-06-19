@@ -15,3 +15,6 @@ mcp-xhs-chat/
 midscene_run/
 # 本地 Claude 设置
 .claude/
+
+# Superpowers brainstorm scratch
+.superpowers/
