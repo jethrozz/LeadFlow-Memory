@@ -85,6 +85,15 @@ describe("LeadFlow Dashboard", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string) => {
+        if (url.endsWith("/api/devices/xhs")) {
+          return Response.json({ devices: [{ deviceId: "b759b4fa", status: "connected" }] });
+        }
+        if (url.includes("/screenshot")) {
+          return Response.json({
+            imageDataUrl: "data:image/png;base64,AAAA",
+            capturedAt: "2026-06-19T03:00:00.000Z",
+          });
+        }
         if (url.endsWith("/api/dashboard/leads")) {
           return Response.json(leadListResponse);
         }
@@ -106,8 +115,13 @@ describe("LeadFlow Dashboard", () => {
     expect(screen.getByText("想在渝北附近买个三房。")).toBeInTheDocument();
     expect(screen.getByText("预算最好 130 万以内，孩子明年上小学。")).toBeInTheDocument();
 
-    // 时间线事件标签（时间线按钮 + 事件详情各出现一次）
-    expect(screen.getAllByText("发现线索").length).toBeGreaterThan(0);
+    // 底部横向时间线进度带渲染 6 段
+    expect(screen.getByText("发现线索")).toBeInTheDocument();
+    expect(screen.getByText("接力恢复")).toBeInTheDocument();
+    // 会话状态条
+    expect(screen.getByText(/正在跟进/)).toBeInTheDocument();
+    // 实时画面栏
+    expect(screen.getByText("实时画面")).toBeInTheDocument();
 
     // 下一步跟进话术 + 操作按钮
     expect(screen.getByText(/渝北三房重新筛了一版/)).toBeInTheDocument();
