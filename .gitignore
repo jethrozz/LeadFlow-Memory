@@ -8,7 +8,11 @@ coverage
 .turbo
 .worktrees
 .npm-cache
-
+demo-recordings/
+output/
+videos/
+scripts/
+.pnpm-store/
 # 原外部 MCP 工程：逻辑已移植进 packages/connectors/src/xhs-chat/midscene/，保留作参考但不提交
 mcp-xhs-chat/
 # Midscene 运行报告（产物，勿提交）
