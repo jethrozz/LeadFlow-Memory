@@ -286,4 +286,34 @@ describe("api app", () => {
     const res = await a.request("/api/leads/ld/simulate-crash", { method: "POST" });
     expect(res.status).toBe(400);
   });
+
+  it("GET /api/devices/xhs 返回默认设备 id", async () => {
+    const response = await app.request("/api/devices/xhs");
+    expect(response.status).toBe(200);
+    const json = (await response.json()) as { devices: Array<{ deviceId: string }> };
+    expect(json.devices[0]?.deviceId).toBeTruthy();
+  });
+
+  it("GET /api/devices/:id/screenshot 返回截图 data url", async () => {
+    const response = await app.request("/api/devices/device-1/screenshot");
+    expect(response.status).toBe(200);
+    const json = (await response.json()) as { imageDataUrl: string; capturedAt: string };
+    expect(json.imageDataUrl).toMatch(/^data:image\//);
+    expect(json.capturedAt).toBeTruthy();
+  });
+
+  it("截图失败时返回 503", async () => {
+    const services = createFakeServices();
+    services.xhsChat = {
+      ...services.xhsChat,
+      getScreenshot: async () => {
+        throw new Error("device offline");
+      },
+    };
+    const failApp = createApp(services);
+    const response = await failApp.request("/api/devices/device-1/screenshot");
+    expect(response.status).toBe(503);
+    const json = (await response.json()) as { error: { code: string } };
+    expect(json.error.code).toBe("DEVICE_SCREENSHOT_FAILED");
+  });
 });

@@ -20,11 +20,10 @@ export function devicesRoute(services: ApiServices) {
     return c.json(await services.xhsChat.disconnectDevice(body));
   });
 
-  route.get("/xhs", (c) =>
-    c.json({
-      devices: [{ deviceId: "device-1", status: "connected" }],
-    }),
-  );
+  route.get("/xhs", (c) => {
+    const deviceId = process.env.AUTO_FOLLOWUP_DEVICE_ID || "b759b4fa";
+    return c.json({ devices: [{ deviceId, status: "connected" }] });
+  });
 
   route.get("/xhs-web/login-status", async (c) => {
     try {
@@ -39,6 +38,20 @@ export function devicesRoute(services: ApiServices) {
         );
       }
       throw err;
+    }
+  });
+
+  route.get("/:deviceId/screenshot", async (c) => {
+    const deviceId = c.req.param("deviceId");
+    try {
+      const shot = await services.xhsChat.getScreenshot({ deviceId });
+      return c.json(shot);
+    } catch (err) {
+      console.warn(
+        "[devices/screenshot] failed:",
+        err instanceof Error ? err.message : err,
+      );
+      return c.json({ error: { code: "DEVICE_SCREENSHOT_FAILED" } }, 503);
     }
   });
 
