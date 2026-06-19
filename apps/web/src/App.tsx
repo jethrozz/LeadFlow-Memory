@@ -7,6 +7,8 @@ import {
   startFollowup,
 } from "./api";
 import type { DashboardLeadDetail, DashboardLeadItem } from "./types";
+import { DeviceScreen } from "./DeviceScreen";
+import { TIMELINE_STAGES, currentStageIndex } from "./timeline-stage";
 import "./styles.css";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -51,17 +53,36 @@ function formatTime(iso?: string) {
   return date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-type Tab = "memory" | "artifacts" | "trace";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** 把长 workerId 收成可读短名：worker_192.168.0.100_56443_7668 → Worker-7668。 */
+function shortWorker(id?: string | null): string {
+  if (!id) return "待命 Worker";
+  if (id === "worker_crashed_demo") return "已崩溃 Worker";
+  const seg = id.split("_").pop();
+  return `Worker-${seg ?? id}`;
+}
+
+type Tab = "followup" | "artifacts" | "memory" | "trace";
+
+type CrashStage = "crashing" | "waiting" | "recovered" | "timeout";
+type CrashState = {
+  stage: CrashStage;
+  prevWorker: string;
+  newWorker?: string;
+  summary?: string;
+};
 
 export function App() {
   const [leads, setLeads] = useState<DashboardLeadItem[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DashboardLeadDetail | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("artifacts");
+  const [activeTab, setActiveTab] = useState<Tab>("followup");
   const [isLoading, setIsLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
+  const [crashState, setCrashState] = useState<CrashState | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -118,7 +139,65 @@ export function App() {
   }
 
 
+  // 模拟崩溃 + 接力动画：点击后播放三幕动画，并真实轮询后端时间线，
+  // 等到新的 handoff_recovered 事件后揭晓恢复摘要(动画不是假的，结尾是真实接力结果)。
+  async function handleSimulateCrash() {
+    if (!selectedLeadId || !detail) return;
+    const leadId = selectedLeadId;
+    const prevWorker = detail.lead.workerId ?? "worker";
+    // 基线：崩溃前最近一次接力恢复的时间戳，之后出现的才算"本次"接力。
+    const baselineTs = detail.timeline
+      .filter((e) => e.type === "handoff_recovered")
+      .reduce((max, e) => Math.max(max, new Date(e.createdAt).getTime()), 0);
+
+    setBusy(true);
+    setCrashState({ stage: "crashing", prevWorker });
+    try {
+      await simulateCrash(leadId);
+    } catch (e) {
+      setCrashState(null);
+      setBusy(false);
+      alert(e instanceof Error ? e.message : String(e));
+      return;
+    }
+
+    await sleep(1800); // 崩溃动画
+    setCrashState((s) => (s ? { ...s, stage: "waiting" } : s));
+
+    // 轮询等待真实接力(下一 tick 才发生，最多等 ~70s)。
+    const deadline = Date.now() + 70_000;
+    let found: { newWorker: string; summary: string } | null = null;
+    while (Date.now() < deadline) {
+      await sleep(2500);
+      let d: DashboardLeadDetail;
+      try {
+        d = await fetchDashboardLeadDetail(leadId);
+      } catch {
+        continue;
+      }
+      setDetail(d);
+      const rec = d.timeline
+        .filter((e) => e.type === "handoff_recovered" && new Date(e.createdAt).getTime() > baselineTs)
+        .at(-1);
+      if (rec) {
+        found = { newWorker: rec.workerId ?? d.lead.workerId ?? "", summary: rec.summary };
+        break;
+      }
+    }
+
+    setCrashState((s) =>
+      s
+        ? found
+          ? { ...s, stage: "recovered", newWorker: found.newWorker, summary: found.summary }
+          : { ...s, stage: "timeout" }
+        : s,
+    );
+    fetchDashboardLeads().then(setLeads).catch(() => {});
+    setBusy(false);
+  }
+
   const activeLead = leads.find((lead) => lead.id === selectedLeadId) ?? null;
+  const stageIndex = currentStageIndex(detail?.timeline ?? []);
   const activeEvent =
     detail?.timeline.find((event) => event.id === activeEventId) ?? detail?.timeline[0] ?? null;
 
@@ -220,7 +299,21 @@ export function App() {
           </div>
         </header>
 
-        <div className="content-grid">
+        {/* ① 会话状态条 */}
+        <div className="session-bar">
+          {activeLead ? (
+            <>
+              <span className="session-dot" /> 正在跟进{" "}
+              <strong>{activeLead.displayName}</strong> · {activeLead.intentLevel} 级 · 触达{" "}
+              {detail?.lead.followupTouchCount ?? 0}
+            </>
+          ) : (
+            <span className="session-muted">未选择线索</span>
+          )}
+        </div>
+
+        {/* ② 画像 + 跟进控制台(含 Inspector Tab) */}
+        <div className="mid-row">
           <section className="lead-profile panel">
             <div className="panel-header">
               <div>
@@ -232,9 +325,6 @@ export function App() {
 
             {detail ? (
               <>
-                <div className="lead-sub">
-                  {detail.lead.workerId ? `worker ${detail.lead.workerId}` : "无主"} · 触达 {detail.lead.followupTouchCount ?? 0}
-                </div>
                 <div className="requirement-grid">
                   <div>
                     <span>预算</span>
@@ -277,95 +367,13 @@ export function App() {
             )}
           </section>
 
-          <section className="timeline-panel panel">
-            <div className="panel-header">
-              <div>
-                <p className="eyebrow">记忆时间线</p>
-                <h3>从线索发现到接力恢复</h3>
-              </div>
-              <span className="small-proof">Walrus 证明链完整</span>
-            </div>
-
-            <div className="timeline">
-              {(detail?.timeline ?? []).map((event) => (
-                <button
-                  className={[
-                    "timeline-event",
-                    event.id === activeEvent?.id ? "active" : "",
-                    event.type.startsWith("handoff") ? "handoff" : "",
-                  ].filter(Boolean).join(" ")}
-                  key={event.id}
-                  onClick={() => setActiveEventId(event.id)}
-                  type="button"
-                >
-                  <span className="event-node" />
-                  <span className="event-time">{formatTime(event.createdAt)}</span>
-                  <strong>{EVENT_LABELS[event.type] ?? event.type}</strong>
-                  <span>{event.agentName ?? "Agent"}</span>
-                </button>
-              ))}
-            </div>
-
-            {activeEvent ? (
-              <div className="event-detail">
-                <div>
-                  <p className="section-kicker">当前事件</p>
-                  <h4>{EVENT_LABELS[activeEvent.type] ?? activeEvent.type}</h4>
-                  <p>{activeEvent.summary}</p>
-                </div>
-                <div className="event-proof">
-                  <span>{activeEvent.type}</span>
-                  <strong>{activeEvent.artifactRefs[0] ?? "—"}</strong>
-                </div>
-              </div>
-            ) : null}
-          </section>
-
-          <section className="follow-up panel">
-            <div className="panel-header">
-              <div>
-                <p className="eyebrow">下一步最佳跟进</p>
-                <h3>{detail?.nextFollowup?.worker ?? "转化 Agent"}</h3>
-              </div>
-              <span className="handoff-badge">{detail?.nextFollowup ? "已恢复" : "待生成"}</span>
-            </div>
-            <div className="message-preview">
-              <p>{detail?.nextFollowup?.message ?? "等待 Agent 生成下一步跟进话术。"}</p>
-            </div>
-            {usedMemoryChips.length > 0 ? (
-              <div className="used-memory">
-                <p className="section-kicker">本次使用的记忆</p>
-                <div className="chips compact">
-                  {usedMemoryChips.map((chip) => (
-                    <span key={chip}>{chip}</span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            <div className="follow-up-actions">
-              <button type="button" disabled={!selectedLeadId || busy}
-                onClick={() => withBusy(() => startFollowup(selectedLeadId!))}>
-                加入跟进
-              </button>
-              <button type="button"
-                disabled={!selectedLeadId || busy || detail?.lead.status !== "contacting"}
-                onClick={() => withBusy(() => simulateCrash(selectedLeadId!))}>
-                模拟崩溃
-              </button>
-              <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="手动发一句…" />
-              <button type="button" disabled={!selectedLeadId || busy || !draft}
-                onClick={() => withBusy(async () => { await sendFollowup(selectedLeadId!, draft); setDraft(""); })}>
-                手动发
-              </button>
-            </div>
-          </section>
-
-          <section className="inspector panel">
-            <div className="tab-row" role="tablist" aria-label="Inspector 标签">
+          <section className="console panel">
+            <div className="tab-row" role="tablist" aria-label="跟进与证据">
               {(
                 [
-                  ["memory", "MemWal 记忆"],
+                  ["followup", "跟进话术"],
                   ["artifacts", "Walrus Artifacts"],
+                  ["memory", "MemWal 记忆"],
                   ["trace", "Agent Trace"],
                 ] as Array<[Tab, string]>
               ).map(([key, label]) => (
@@ -379,6 +387,40 @@ export function App() {
                 </button>
               ))}
             </div>
+
+            {activeTab === "followup" ? (
+              <div className="followup-body">
+                <div className="message-preview">
+                  <p>{detail?.nextFollowup?.message ?? "等待 Agent 生成下一步跟进话术。"}</p>
+                </div>
+                {usedMemoryChips.length > 0 ? (
+                  <div className="used-memory">
+                    <p className="section-kicker">本次使用的记忆</p>
+                    <div className="chips compact">
+                      {usedMemoryChips.map((chip) => (
+                        <span key={chip}>{chip}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="follow-up-actions">
+                  <button type="button" disabled={!selectedLeadId || busy}
+                    onClick={() => withBusy(() => startFollowup(selectedLeadId!))}>
+                    加入跟进
+                  </button>
+                  <button type="button"
+                    disabled={!selectedLeadId || busy || detail?.lead.status !== "contacting"}
+                    onClick={handleSimulateCrash}>
+                    模拟崩溃
+                  </button>
+                  <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="手动发一句…" />
+                  <button type="button" disabled={!selectedLeadId || busy || !draft}
+                    onClick={() => withBusy(async () => { await sendFollowup(selectedLeadId!, draft); setDraft(""); })}>
+                    手动发
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             {activeTab === "memory" ? (
               <div className="memory-grid">
@@ -427,7 +469,109 @@ export function App() {
             ) : null}
           </section>
         </div>
+
+        {/* ③ 底部横向时间线进度带 */}
+        <section className="timeline-strip panel">
+          <p className="section-kicker">记忆时间线 · 当前进度</p>
+          <div className="hsteps">
+            {TIMELINE_STAGES.map((stage, i) => {
+              const cls =
+                i < stageIndex ? "hstep done" : i === stageIndex ? "hstep cur" : "hstep";
+              return (
+                <div className={cls} key={stage.key}>
+                  <span className="hnode" />
+                  <span className="hlabel">{stage.label}</span>
+                  {i === stageIndex ? <span className="hcur">进行中</span> : null}
+                </div>
+              );
+            })}
+          </div>
+          {activeEvent ? (
+            <div className="strip-detail">
+              <span>{EVENT_LABELS[activeEvent.type] ?? activeEvent.type}：{activeEvent.summary}</span>
+              <code>{activeEvent.artifactRefs[0] ?? "—"}</code>
+            </div>
+          ) : null}
+        </section>
       </section>
+
+      <aside className="device-rail">
+        <DeviceScreen />
+      </aside>
+
+      {crashState ? (
+        <div className="crash-overlay" role="dialog" aria-modal="true">
+          <div className={`crash-stage stage-${crashState.stage}`}>
+            <button
+              className="crash-close"
+              type="button"
+              aria-label="关闭"
+              onClick={() => setCrashState(null)}
+            >
+              ×
+            </button>
+
+            <p className="crash-title">
+              {crashState.stage === "crashing" && "💥 Worker 崩溃"}
+              {crashState.stage === "waiting" && "🛟 接力恢复进行中…"}
+              {crashState.stage === "recovered" && "✅ 接力成功，已恢复上下文"}
+              {crashState.stage === "timeout" && "⏳ 接管处理中"}
+            </p>
+
+            <div className="crash-agents">
+              <div
+                className={`crash-agent old ${
+                  crashState.stage === "crashing" ? "boom" : "dead"
+                }`}
+              >
+                <div className="crash-avatar">🤖</div>
+                <span className="crash-agent-name">{shortWorker(crashState.prevWorker)}</span>
+                <span className="crash-agent-tag">原 Worker</span>
+              </div>
+
+              <div className={`crash-beam stage-${crashState.stage}`}>
+                <span className="crash-packet">🧠 记忆</span>
+              </div>
+
+              <div
+                className={`crash-agent new ${
+                  crashState.stage === "recovered" ? "alive" : ""
+                }`}
+              >
+                <div className="crash-avatar">🤖</div>
+                <span className="crash-agent-name">
+                  {crashState.newWorker ? shortWorker(crashState.newWorker) : "待命 Worker"}
+                </span>
+                <span className="crash-agent-tag">接力 Worker</span>
+              </div>
+            </div>
+
+            <div className="crash-detail">
+              {crashState.stage === "crashing" && (
+                <p>原 Worker 异常退出，租约失效，跟进中断…</p>
+              )}
+              {crashState.stage === "waiting" && (
+                <p>另一个 Worker 正在认领该线索，并从 MemWal 召回客户长期记忆以恢复上下文…</p>
+              )}
+              {crashState.stage === "recovered" && (
+                <>
+                  <p className="crash-summary-label">从 MemWal 长期记忆恢复：</p>
+                  <blockquote className="crash-summary">{crashState.summary}</blockquote>
+                </>
+              )}
+              {crashState.stage === "timeout" && (
+                <p>接管仍在进行，稍后可在「记忆时间线」查看 接力恢复 事件与恢复摘要。</p>
+              )}
+            </div>
+
+            {(crashState.stage === "recovered" || crashState.stage === "timeout") && (
+              <button className="crash-done" type="button" onClick={() => setCrashState(null)}>
+                完成
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
