@@ -44,9 +44,15 @@ export type XhsDeviceResult = {
   updatedAt: string;
 };
 
+export type XhsScreenshotResult = {
+  imageDataUrl: string;
+  capturedAt: string;
+};
+
 export type XhsChatClient = {
   connectDevice(input: XhsDeviceInput): Promise<XhsDeviceResult>;
   disconnectDevice(input: XhsDeviceInput): Promise<XhsDeviceResult>;
   getConversation(input: XhsGetConversationInput): Promise<XhsGetConversationResult>;
   sendPrivateMessage(input: XhsSendPrivateMessageInput): Promise<XhsSendPrivateMessageResult>;
+  getScreenshot(input: XhsDeviceInput): Promise<XhsScreenshotResult>;
 };

@@ -5,6 +5,7 @@ import type {
   XhsDeviceResult,
   XhsGetConversationInput,
   XhsGetConversationResult,
+  XhsScreenshotResult,
   XhsSendPrivateMessageInput,
   XhsSendPrivateMessageResult,
 } from "./types.js";
@@ -57,6 +58,16 @@ export class FakeXhsChatClient implements XhsChatClient {
       status: "sent",
       remoteMessageId: message.id,
       sentAt: message.sentAt,
+    };
+  }
+
+  async getScreenshot(_input: XhsDeviceInput): Promise<XhsScreenshotResult> {
+    // 1×1 透明 PNG 占位：无真机时 dev/测试可渲染一帧。
+    const onePxPng =
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+    return {
+      imageDataUrl: `data:image/png;base64,${onePxPng}`,
+      capturedAt: new Date().toISOString(),
     };
   }
 }

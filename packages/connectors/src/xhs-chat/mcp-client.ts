@@ -7,6 +7,7 @@ import type {
   XhsDeviceResult,
   XhsGetConversationInput,
   XhsGetConversationResult,
+  XhsScreenshotResult,
   XhsSendPrivateMessageInput,
   XhsSendPrivateMessageResult,
 } from "./types.js";
@@ -125,6 +126,10 @@ export class XhsMcpStdioClient implements XhsChatClient {
       status: "sent",
       sentAt: res.sent_at,
     };
+  }
+
+  async getScreenshot(_input: XhsDeviceInput): Promise<XhsScreenshotResult> {
+    throw new Error("NOT_SUPPORTED: getScreenshot is unavailable in legacy MCP stdio mode");
   }
 
   async close(): Promise<void> {

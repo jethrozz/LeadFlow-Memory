@@ -5,6 +5,7 @@ import type {
   XhsDeviceResult,
   XhsGetConversationInput,
   XhsGetConversationResult,
+  XhsScreenshotResult,
   XhsSendPrivateMessageInput,
   XhsSendPrivateMessageResult,
 } from "./types.js";
@@ -118,6 +119,15 @@ export class XhsMidsceneClient implements XhsChatClient {
       status: "sent",
       sentAt: new Date().toISOString(),
     };
+  }
+
+  async getScreenshot(input: XhsDeviceInput): Promise<XhsScreenshotResult> {
+    const { deviceId } = input;
+    await this.ensureConnected(deviceId);
+    const agent = this.devices.getAgent(deviceId);
+    const raw = await agent.page.screenshotBase64();
+    const imageDataUrl = raw.startsWith("data:") ? raw : `data:image/jpeg;base64,${raw}`;
+    return { imageDataUrl, capturedAt: new Date().toISOString() };
   }
 
   async close(): Promise<void> {

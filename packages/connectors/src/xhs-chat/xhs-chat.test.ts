@@ -25,6 +25,15 @@ describe("XHS chat connector", () => {
 
     expect(result.status).toBe("sent");
   });
+
+  it("returns a screenshot data url from the fake client", async () => {
+    const client = new FakeXhsChatClient();
+    const result = await client.getScreenshot({ deviceId: "device-1" });
+
+    expect(result.imageDataUrl).toMatch(/^data:image\/(png|jpeg);base64,/);
+    expect(typeof result.capturedAt).toBe("string");
+    expect(Number.isNaN(Date.parse(result.capturedAt))).toBe(false);
+  });
 });
 
 describe("XHS chat client configuration", () => {
